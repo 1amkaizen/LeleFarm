@@ -96,7 +96,15 @@ async def pakan_edit(request: Request):
     pakan_id = int(form.get("pakan_id"))
     kolam_id = int(form.get("kolam_id"))
     tanggal = form.get("tanggal")
-    pakan_stok_id = int(form.get("pakan_stok_id"))
+
+    # Validasi pakan_stok_id
+    pakan_stok_id_str = form.get("pakan_stok_id")
+    if pakan_stok_id_str is None or pakan_stok_id_str == "":
+        logger.error(f"[USER {user_id}] Pakan Stok ID tidak ditemukan atau kosong")
+        return RedirectResponse("/dashboard/pakan", status_code=303)
+
+    pakan_stok_id = int(pakan_stok_id_str)  # Sekarang aman untuk di-convert
+
     jumlah = float(form.get("jumlah") or 0)
     satuan = form.get("satuan")
     catatan = form.get("catatan")
@@ -125,7 +133,24 @@ async def pakan_edit(request: Request):
     else:
         logger.error(f"[USER {user_id}] Gagal edit pakan {pakan_id}")
 
-    return RedirectResponse("/dashboard/pakan", status_code=303)
+    # Ambil ulang data setelah edit
+    kolam_list = await get_all_kolam(user_id=user_id)
+    pakan_list = await pakan.get_all_pakan(user_id=user_id)
+    pakan_stok_list = await pakan_stok.get_all_pakan_stok(user_id=user_id)
+
+    kolam_dict = {k["id"]: k["nama_kolam"] for k in kolam_list}
+    for p in pakan_list:
+        p["kolam_nama"] = kolam_dict.get(p["kolam_id"], "Unknown")
+
+    return templates.TemplateResponse(
+        "dashboard/pakan.html",
+        {
+            "request": request,
+            "kolam_list": kolam_list,
+            "pakan_list": pakan_list,
+            "pakan_stok_list": pakan_stok_list,
+        },
+    )
 
 
 @router.post("/dashboard/pakan/delete")
@@ -138,7 +163,8 @@ async def pakan_delete(request: Request):
     form = await request.form()
     pakan_id = int(form.get("pakan_id"))
 
-    success = await pakan.delete_pakan(pakan_id, user_id=user_id)
+    # Panggil delete_pakan tanpa mengirimkan user_id lagi, karena sudah ada di cookies
+    success = await pakan.delete_pakan(pakan_id, user_id)
 
     if success:
         logger.info(f"[USER {user_id}] Pakan {pakan_id} dihapus")

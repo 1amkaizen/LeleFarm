@@ -71,11 +71,11 @@
         <td class="border px-2 py-1 whitespace-nowrap flex justify-center gap-2">
           <button class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded flex items-center gap-1 text-sm"
                   onclick="openEditModal({{ p['id'] }}, '{{ p['nama_pakan'] }}', {{ p['jumlah'] }}, '{{ p['satuan'] }}', {{ p['harga'] }}, '{{ p['tanggal_masuk'] }}')">
-            <i class="fas fa-edit"></i> Edit
+            <i class="fas fa-edit"></i>
           </button>
           <button class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded flex items-center gap-1 text-sm"
                   onclick="openDeleteModal({{ p['id'] }}, '{{ p['nama_pakan'] }}')">
-            <i class="fas fa-trash"></i> Hapus
+            <i class="fas fa-trash"></i>
           </button>
         </td>
       </tr>
@@ -97,6 +97,18 @@
     </tbody>
   </table>
 </div>
+
+<!-- Pagination Controls -->
+<div id="paginationControls" class="flex justify-center mt-4 space-x-2 mb-5">
+  <button id="prevBtn" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-300" onclick="changePage('prev')" disabled>
+    <i class="fas fa-arrow-left"></i> <!-- Ikon panah kiri untuk Previous -->
+  </button>
+  <span id="pageInfo" class="mx-4 text-lg text-gray-800 font-semibold">Page 1</span>
+  <button id="nextBtn" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-300" onclick="changePage('next')" disabled>
+    <i class="fas fa-arrow-right"></i> <!-- Ikon panah kanan untuk Next -->
+  </button>
+</div>
+
 
 <!-- Modal Edit Stok Pakan -->
 <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
@@ -189,6 +201,53 @@
       editTanggal.value = todayStr;
     }
   });
+</script>
+
+<script>
+  const rowsPerPage = 5;  // Jumlah baris per halaman
+  let currentPage = 1;
+
+  // Ambil semua baris dalam tabel
+  const stokRows = document.querySelectorAll('table tbody tr');
+  const totalRows = stokRows.length;
+  const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+  // Fungsi untuk menampilkan halaman yang sesuai
+  function showPage(page) {
+    // Tentukan indeks mulai dan selesai
+    const startIdx = (page - 1) * rowsPerPage;
+    const endIdx = startIdx + rowsPerPage;
+
+    // Sembunyikan semua baris
+    stokRows.forEach((row, index) => {
+      if (index >= startIdx && index < endIdx) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    // Update informasi halaman
+    document.getElementById('pageInfo').innerText = `Page ${page} of ${totalPages}`;
+
+    // Disable previous/next buttons jika di halaman pertama/terakhir
+    document.getElementById('prevBtn').disabled = page === 1;
+    document.getElementById('nextBtn').disabled = page === totalPages;
+  }
+
+  // Fungsi untuk berpindah halaman
+  function changePage(direction) {
+    if (direction === 'prev' && currentPage > 1) {
+      currentPage--;
+    } else if (direction === 'next' && currentPage < totalPages) {
+      currentPage++;
+    }
+
+    showPage(currentPage);
+  }
+
+  // Tampilkan halaman pertama saat pertama kali load
+  showPage(currentPage);
 </script>
 
 {% endblock %}

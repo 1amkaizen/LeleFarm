@@ -16,6 +16,7 @@
             class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
             required
         >
+        <p id="fullnameError" class="text-red-600 text-sm mt-1 hidden"></p>
       </div>
 
       <!-- Email -->
@@ -29,7 +30,7 @@
             class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
             required
         >
-        <p id="emailError" class="text-red-600 text-sm mt-1 hidden">Format email tidak valid</p>
+        <p id="emailError" class="text-red-600 text-sm mt-1 hidden"></p>
       </div>
 
       <!-- Username -->
@@ -41,10 +42,11 @@
             class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
             required
         >
+        <p id="usernameError" class="text-red-600 text-sm mt-1 hidden"></p>
       </div>
 
       <!-- Password -->
-      <div>
+      <div class="relative">
         <label class="block text-sm font-medium mb-1">Password</label>
         <input 
             type="password"
@@ -54,10 +56,14 @@
             class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
             required
         >
+        <span class="absolute right-3 top-9 cursor-pointer text-gray-500" id="togglePassword">
+          <i class="fas fa-eye"></i>
+        </span>
+        <p id="passwordError" class="text-red-600 text-sm mt-1 hidden"></p>
       </div>
 
       <!-- Confirm Password -->
-      <div>
+      <div class="relative">
         <label class="block text-sm font-medium mb-1">Konfirmasi Password</label>
         <input 
             type="password"
@@ -67,6 +73,9 @@
             class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
             required
         >
+        <span class="absolute right-3 top-9 cursor-pointer text-gray-500" id="toggleConfirmPassword">
+          <i class="fas fa-eye"></i>
+        </span>
         <p id="confirmError" class="text-red-600 text-sm mt-1 hidden">Password tidak cocok</p>
       </div>
 
@@ -86,35 +95,92 @@
   </p>
 </div>
 
-<!-- VALIDASI REALTIME -->
 <script>
-  const emailField = document.getElementById("emailField");
-  const emailError = document.getElementById("emailError");
+const form = document.getElementById("registerForm");
+const emailField = document.getElementById("emailField");
+const emailError = document.getElementById("emailError");
 
-  const confirmPasswordField = document.getElementById("confirmPasswordField");
-  const passwordField = document.getElementById("passwordField");
-  const confirmError = document.getElementById("confirmError");
+const confirmPasswordField = document.getElementById("confirmPasswordField");
+const passwordField = document.getElementById("passwordField");
+const confirmError = document.getElementById("confirmError");
 
-  // Validasi email realtime
-  emailField.addEventListener("input", () => {
-      const value = emailField.value.trim();
-      const valid = /^[^@]+@[^@]+\.[^@]+$/.test(value);
+const togglePassword = document.getElementById("togglePassword");
+const toggleConfirmPassword = document.getElementById("toggleConfirmPassword");
 
-      if (!valid) {
-          emailError.classList.remove("hidden");
-      } else {
-          emailError.classList.add("hidden");
-      }
-  });
+const fullnameError = document.getElementById("fullnameError");
+const usernameError = document.getElementById("usernameError");
+const passwordError = document.getElementById("passwordError");
 
-  // Validasi konfirmasi password realtime
-  confirmPasswordField.addEventListener("input", () => {
-      if (confirmPasswordField.value !== passwordField.value) {
-          confirmError.classList.remove("hidden");
-      } else {
-          confirmError.classList.add("hidden");
-      }
-  });
+// Validasi email realtime
+emailField.addEventListener("input", () => {
+    const value = emailField.value.trim();
+    const valid = /^[^@]+@[^@]+\.[^@]+$/.test(value);
+
+    if (!valid) {
+        emailError.textContent = "Format email tidak valid";
+        emailError.classList.remove("hidden");
+    } else {
+        emailError.classList.add("hidden");
+    }
+});
+
+// Validasi konfirmasi password realtime
+confirmPasswordField.addEventListener("input", () => {
+    if (confirmPasswordField.value !== passwordField.value) {
+        confirmError.classList.remove("hidden");
+    } else {
+        confirmError.classList.add("hidden");
+    }
+});
+
+// Toggle password visibility
+togglePassword.addEventListener("click", () => {
+    const type = passwordField.type === "password" ? "text" : "password";
+    passwordField.type = type;
+    togglePassword.innerHTML = type === "password" ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+});
+
+toggleConfirmPassword.addEventListener("click", () => {
+    const type = confirmPasswordField.type === "password" ? "text" : "password";
+    confirmPasswordField.type = type;
+    toggleConfirmPassword.innerHTML = type === "password" ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+});
+
+// Submit form via fetch
+form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    // Reset semua error
+    [emailError, confirmError, fullnameError, usernameError, passwordError].forEach(el => el.classList.add("hidden"));
+
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+        const res = await fetch("/register", {
+            method: "POST",
+            body: new URLSearchParams(data),
+        });
+
+        if (!res.ok) {
+            const error = await res.json();
+            // Tampilkan error sesuai field
+            const msg = error.detail.toLowerCase();
+            if (msg.includes("email")) emailError.textContent = error.detail, emailError.classList.remove("hidden");
+            else if (msg.includes("username")) usernameError.textContent = error.detail, usernameError.classList.remove("hidden");
+            else if (msg.includes("password")) passwordError.textContent = error.detail, passwordError.classList.remove("hidden");
+            else if (msg.includes("nama")) fullnameError.textContent = error.detail, fullnameError.classList.remove("hidden");
+            else alert(error.detail);
+            return;
+        }
+
+        // Sukses
+        window.location.href = "/login";
+    } catch (err) {
+        console.error(err);
+        alert("Terjadi kesalahan, coba lagi.");
+    }
+});
 </script>
 
 {% endblock %}

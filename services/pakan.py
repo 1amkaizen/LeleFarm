@@ -102,7 +102,7 @@ async def edit_pakan(
     return result.data
 
 
-async def delete_pakan(user_id: int, pakan_id: int):
+async def delete_pakan(pakan_id: int, user_id: int):
     """
     Hapus pakan milik user tertentu
     """
@@ -112,7 +112,7 @@ async def delete_pakan(user_id: int, pakan_id: int):
         lambda: db.table("Pakan")
         .delete()
         .eq("id", pakan_id)
-        .eq("user_id", user_id)
+        .eq("user_id", user_id)  # Menggunakan user_id dari cookies yang sudah ada
         .execute()
     )
 

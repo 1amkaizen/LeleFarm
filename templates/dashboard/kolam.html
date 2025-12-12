@@ -37,26 +37,29 @@
   </button>
 </form>
 
-<div class="overflow-x-auto">
-  <table class="w-full md:min-w-[900px] table-auto border-collapse border bg-white shadow rounded-lg overflow-hidden">
+<!-- Tabel Kolam -->
+<div class="overflow-x-auto mb-5">
+  <table id="kolamTable" class="w-full md:min-w-[900px] table-auto border-collapse border bg-white shadow rounded-lg overflow-hidden">
     <thead class="bg-blue-100 text-blue-700 font-semibold">
       <tr>
         <th class="border px-3 py-2">ID</th>
-        <th class="border px-3 py-2">Nama Kolam</th>
-        <th class="border px-3 py-2">Kapasitas</th>
-        <th class="border px-3 py-2">Tanggal Mulai</th>
-        <th class="border px-3 py-2">Status</th>
-        <th class="border px-3 py-2">Aksi</th>
+        <th class="border px-3 py-2"><i class="fas fa-water"></i> Nama Kolam</th>
+        <th class="border px-3 py-2"><i class="fas fa-sort-numeric-up"> </i> Kapasitas</th>
+        <th class="border px-3 py-2"><i class="fas fa-calendar-alt"></i> Tanggal Mulai</th>
+        <th class="border px-3 py-2"><i class="fas fa-sticky-note"></i> Catatan</th>
+        <th class="border px-3 py-2"><i class="fas fa-check-circle"></i> Status</th>
+        <th class="border px-3 py-2"><i class="fas fa-cogs"></i> Aksi</th>
       </tr>
     </thead>
     <tbody class="divide-y divide-gray-200">
       {% for kolam in kolam_list %}
-      <tr class="hover:bg-blue-50 transition">
-        <td class="border px-2 py-1">{{ kolam.id }}</td>
-        <td class="border px-2 py-1">{{ kolam.nama_kolam }}</td>
-        <td class="border px-2 py-1">{{ "{:,}".format(kolam.kapasitas_bibit).replace(',', '.') }}</td>
-        <td class="border px-2 py-1">{{ kolam.tanggal_mulai }}</td>
-        <td class="border px-2 py-1">
+      <tr class="kolamRow hover:bg-blue-50 transition">
+        <td class="border px-2 py-1 whitespace-nowrap">{{ kolam.id }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ kolam.nama_kolam }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ "{:,}".format(kolam.kapasitas_bibit).replace(',', '.') }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ kolam.tanggal_mulai }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ kolam.catatan|default('Tidak ada catatan') }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">
           {% if kolam.status == 'Aktif' %}
             <span class="text-green-600 font-semibold"><i class="fas fa-check-circle"></i> {{ kolam.status }}</span>
           {% else %}
@@ -69,14 +72,14 @@
               class="bg-yellow-400 hover:bg-yellow-500 text-white text-sm md:text-base px-2 py-1 md:px-3 md:py-1.5 rounded flex items-center gap-1 transition"
               onclick="openEditModal({{ kolam.id }}, '{{ kolam.nama_kolam }}', {{ kolam.kapasitas_bibit }}, '{{ kolam.tanggal_mulai }}', '{{ kolam.catatan|default('') }}')"
             >
-              <i class="fas fa-edit"></i> Edit
+              <i class="fas fa-edit"></i>
             </button>
             <button
               type="button"
               class="bg-red-500 hover:bg-red-600 text-white text-sm md:text-base px-2 py-1 md:px-3 md:py-1.5 rounded flex items-center gap-1 transition"
               onclick="openDeleteModal({{ kolam.id }})"
             >
-              <i class="fas fa-trash-alt"></i> Delete
+              <i class="fas fa-trash-alt"></i>
             </button>
           </div>
         </td>
@@ -85,6 +88,21 @@
     </tbody>
   </table>
 </div>
+
+
+
+<!-- Pagination Controls -->
+<div id="paginationControls" class="flex justify-center mt-4 space-x-2 mb-5">
+  <button id="prevBtn" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-300" onclick="changePage('prev')" disabled>
+    <i class="fas fa-arrow-left"></i> <!-- Ikon panah kiri untuk Previous -->
+  </button>
+  <span id="pageInfo" class="mx-4 text-lg text-gray-800 font-semibold">Page 1</span>
+  <button id="nextBtn" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-300" onclick="changePage('next')" disabled>
+    <i class="fas fa-arrow-right"></i> <!-- Ikon panah kanan untuk Next -->
+  </button>
+</div>
+
+
 
 <!-- Modal Edit Kolam -->
 <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
@@ -102,7 +120,8 @@
       </div>
       <div>
         <label for="tanggal_mulai" class="block font-medium text-blue-900"><i class="fas fa-calendar-alt text-yellow-500"></i> Tanggal Mulai</label>
-        <input type="date" id="tanggal_mulai" name="tanggal_mulai" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none" />
+        <input type="date" id="edit_tanggal" name="tanggal_mulai" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none" />
+
       </div>
       <div class="mb-3">
         <label class="block text-sm font-medium text-blue-900">Catatan</label>
@@ -171,4 +190,52 @@
     }
   });
 </script>
+<script>
+  const rowsPerPage = 5;  // Jumlah baris per halaman
+  let currentPage = 1;
+
+  // Ambil semua baris dalam tabel
+  const kolamRows = document.querySelectorAll('.kolamRow');
+  const totalRows = kolamRows.length;
+  const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+  // Fungsi untuk menampilkan halaman yang sesuai
+  function showPage(page) {
+    // Tentukan indeks mulai dan selesai
+    const startIdx = (page - 1) * rowsPerPage;
+    const endIdx = startIdx + rowsPerPage;
+
+    // Sembunyikan semua baris
+    kolamRows.forEach((row, index) => {
+      if (index >= startIdx && index < endIdx) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    // Update informasi halaman
+    document.getElementById('pageInfo').innerText = `Page ${page} of ${totalPages}`;
+
+    // Disable previous/next buttons jika di halaman pertama/terakhir
+    document.getElementById('prevBtn').disabled = page === 1;
+    document.getElementById('nextBtn').disabled = page === totalPages;
+  }
+
+  // Fungsi untuk berpindah halaman
+  function changePage(direction) {
+    if (direction === 'prev' && currentPage > 1) {
+      currentPage--;
+    } else if (direction === 'next' && currentPage < totalPages) {
+      currentPage++;
+    }
+
+    showPage(currentPage);
+  }
+
+  // Tampilkan halaman pertama saat pertama kali load
+  showPage(currentPage);
+</script>
+
+
 {% endblock %}

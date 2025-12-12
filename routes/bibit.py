@@ -1,12 +1,10 @@
 # routes/dashboard/bibit.py
-# Lokasi file: routes/dashboard/bibit.py
-
 import logging
 from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from services.bibit import get_all_bibit, create_bibit
+from services.bibit import get_all_bibit, create_bibit, edit_bibit, delete_bibit
 from services.kolam import get_all_kolam
 
 router = APIRouter()
@@ -24,7 +22,6 @@ async def bibit_page(request: Request):
 
     user_id = int(user_id)
 
-    # WAJIB await kalau service async
     kolam_list = await get_all_kolam(user_id)
     bibit_list = await get_all_bibit(user_id)
 
@@ -77,10 +74,66 @@ async def bibit_submit(
         user_id=user_id,
     )
 
-
     if result:
         logger.info(f"[BIBIT] Bibit berhasil ditambahkan user_id={user_id}: {result}")
     else:
         logger.error("[BIBIT] Gagal menambahkan data bibit")
+
+    return RedirectResponse("/dashboard/bibit", status_code=303)
+
+
+@router.post("/dashboard/bibit/edit")
+async def bibit_edit(request: Request):
+    """Edit data bibit."""
+    user_id = request.cookies.get("user_id")
+    if not user_id:
+        return RedirectResponse("/login", status_code=303)
+
+    user_id = int(user_id)
+    form = await request.form()
+    bibit_id = int(form.get("bibit_id"))
+    kolam_id = int(form.get("kolam_id"))
+    ukuran_bibit = form.get("ukuran_bibit")
+    jumlah = int(form.get("jumlah") or 0)
+    total_harga = float(form.get("total_harga") or 0)
+    catatan = form.get("catatan")
+    tanggal_tebar = form.get("tanggal_tebar")
+
+    updated = await edit_bibit(
+        bibit_id=bibit_id,
+        kolam_id=kolam_id,
+        ukuran_bibit=ukuran_bibit,
+        jumlah=jumlah,
+        total_harga=total_harga,
+        catatan=catatan,
+        tanggal_tebar=tanggal_tebar,
+        user_id=user_id,
+    )
+
+    if updated:
+        logger.info(f"[USER {user_id}] Bibit {bibit_id} berhasil diedit")
+    else:
+        logger.error(f"[USER {user_id}] Gagal edit bibit {bibit_id}")
+
+    return RedirectResponse("/dashboard/bibit", status_code=303)
+
+
+@router.post("/dashboard/bibit/delete")
+async def bibit_delete(request: Request):
+    """Hapus data bibit."""
+    user_id = request.cookies.get("user_id")
+    if not user_id:
+        return RedirectResponse("/login", status_code=303)
+
+    user_id = int(user_id)
+    form = await request.form()
+    bibit_id = int(form.get("bibit_id"))
+
+    success = await delete_bibit(bibit_id, user_id=user_id)
+
+    if success:
+        logger.info(f"[USER {user_id}] Bibit {bibit_id} dihapus")
+    else:
+        logger.error(f"[USER {user_id}] Gagal hapus bibit {bibit_id}")
 
     return RedirectResponse("/dashboard/bibit", status_code=303)

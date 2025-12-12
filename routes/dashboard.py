@@ -5,7 +5,7 @@ import logging
 import asyncio
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 from services.user import get_user_by_id
 from services.kolam import get_all_kolam, get_kolam_status
@@ -13,6 +13,7 @@ from services.kematian import get_all_kematian
 from services.bibit import get_all_bibit
 from services.pengeluaran import get_all_pengeluaran
 from services.pakan import get_all_pakan
+from services.pakan_stok import get_all_pakan_stok  # import service pakan stok
 
 router = APIRouter()
 logger = logging.getLogger("router_dashboard")
@@ -43,6 +44,7 @@ async def dashboard(request: Request):
     bibit_list = await get_all_bibit(user_id)
     pengeluaran_list = await get_all_pengeluaran(user_id)
     pakan_list = await get_all_pakan(user_id)
+    pakan_stok_list = await get_all_pakan_stok(user_id)  # ambil stok pakan
 
     # --- Tambah status panen ke tiap kolam ---
     for k in kolam_list:
@@ -81,7 +83,7 @@ async def dashboard(request: Request):
         k["persentase_kematian"] = (kematian_kolam / total_b * 100) if total_b else 0
 
     # ============================
-    # TABELL BIBIT ENTRY
+    # TABEL BIBIT & PAKAN ENTRY PER KOLAM
     # ============================
 
     bibit_entries = []
@@ -91,23 +93,47 @@ async def dashboard(request: Request):
             (k.get("nama_kolam") for k in kolam_list if k.get("id") == kolam_id), "-"
         )
 
+        # Hitung umur bibit
         tanggal_tebar = b.get("tanggal_tebar")
-        umur_hari = None
+        umur_hari = 0
         if tanggal_tebar:
             try:
-                start_date = datetime.strptime(tanggal_tebar, "%Y-%m-%d")
-                umur_hari = (datetime.now() - start_date).days
+                # Pastikan start_date selalu date object
+                if isinstance(tanggal_tebar, str):
+                    start_date = datetime.fromisoformat(tanggal_tebar.split("T")[0]).date()
+                elif isinstance(tanggal_tebar, datetime):
+                    start_date = tanggal_tebar.date()
+                else:
+                    start_date = tanggal_tebar  # kalau memang date object
+
+                # Pakai timezone WIB untuk sekarang
+                now_wib = datetime.now(timezone.utc) + timedelta(hours=7)
+                umur_hari = (now_wib.date() - start_date).days
+                if umur_hari < 0:
+                    umur_hari = 0
+
+                logger.info(
+                    f"{nama_kolam} - tanggal_tebar={tanggal_tebar} -> umur_hari={umur_hari}"
+                )
             except Exception as e:
-                logger.error(f"Gagal hitung umur bibit di kolam {nama_kolam}: {e}")
+                logger.error(
+                    f"Gagal hitung umur bibit kolam {nama_kolam}, tanggal_tebar={tanggal_tebar}: {e}"
+                )
+                umur_hari = 0
 
         kematian_kolam = sum(
-            km.get("jumlah", 0)
-            for km in kematian_list
-            if km.get("kolam_id") == kolam_id
+            km.get("jumlah", 0) for km in kematian_list if km.get("kolam_id") == kolam_id
         )
 
         pakan_total = sum(
             p.get("jumlah_gram", 0) for p in pakan_list if p.get("kolam_id") == kolam_id
+        )
+        stok_pakan_total = sum(
+            s.get("jumlah", 0) for s in pakan_stok_list if s.get("kolam_id") == kolam_id
+        )
+
+        logger.info(
+            f"{nama_kolam} - tanggal_tebar={tanggal_tebar} -> umur_hari={umur_hari}"
         )
 
         bibit_entries.append(
@@ -120,16 +146,16 @@ async def dashboard(request: Request):
                 "tanggal_tebar": tanggal_tebar,
                 "umur_hari": umur_hari,
                 "status": next(
-                    (k.get("status") for k in kolam_list if k.get("id") == kolam_id),
-                    "-",
+                    (k.get("status") for k in kolam_list if k.get("id") == kolam_id), "-"
                 ),
                 "kematian": kematian_kolam,
                 "pakan_total": pakan_total,
+                "stok_pakan_total": stok_pakan_total,
             }
         )
 
     # ============================
-    # PENGELUARAN
+    # PENGELUARAN + BIBIT + PAKAN STOK
     # ============================
 
     pengeluaran_detail = [
@@ -152,22 +178,38 @@ async def dashboard(request: Request):
         for b in bibit_list
     ]
 
-    pengeluaran_detail += bibit_detail
+    pakan_stok_detail = [
+        {
+            "nama": f"Stok Pakan ({s.get('nama_pakan', '-')})",
+            "jumlah": s.get("jumlah", 0),
+            "harga": s.get("harga", 0),
+            "total": s.get("harga", 0),
+        }
+        for s in pakan_stok_list
+    ]
+
+    # Gabung semua ke pengeluaran_detail
+    pengeluaran_detail += bibit_detail + pakan_stok_detail
     pengeluaran_total = sum(item["total"] for item in pengeluaran_detail)
-    pengeluaran_formatted = "{:,}".format(int(pengeluaran_total)).replace(",", ".")
+    pengeluaran_total_formatted = "{:,}".format(int(pengeluaran_total)).replace(
+        ",", "."
+    )
 
     # ============================
-    # PAKAN
+    # PAKAN TOTAL
     # ============================
 
     total_pakan_gram = sum(p.get("jumlah_gram", 0) for p in pakan_list)
+    total_stok_pakan_gram = sum(s.get("jumlah", 0) for s in pakan_stok_list)
+    total_pakan_semua = total_pakan_gram + total_stok_pakan_gram
+
     total_pakan = (
-        f"{total_pakan_gram / 1000:.2f} kg"
-        if total_pakan_gram >= 1000
-        else f"{total_pakan_gram:.1f} g"
+        f"{total_pakan_semua / 1000:.2f} kg"
+        if total_pakan_semua >= 1000
+        else f"{total_pakan_semua:.1f} g"
     )
 
-    rasio_pakan = (total_pakan_gram / total_bibit * 1000) if total_bibit else 0
+    rasio_pakan = (total_pakan_semua / total_bibit * 1000) if total_bibit else 0
 
     # ============================
     # RENDER DASHBOARD
@@ -182,7 +224,7 @@ async def dashboard(request: Request):
             "total_bibit": total_bibit,
             "total_kematian": total_kematian,
             "bibit_entries": bibit_entries,
-            "pengeluaran_total": pengeluaran_formatted,
+            "pengeluaran_total": pengeluaran_total_formatted,
             "pengeluaran_detail": pengeluaran_detail,
             "total_pakan": total_pakan,
             "total_kolam": total_kolam,

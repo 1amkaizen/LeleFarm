@@ -87,3 +87,92 @@ async def create_bibit(
     except Exception as e:
         logger.error(f"Error create_bibit user_id={user_id}: {e}")
         return None
+
+
+# ============================================================
+# EDIT BIBIT
+# ============================================================
+async def edit_bibit(
+    bibit_id: int,
+    kolam_id: int = None,
+    ukuran_bibit: str = None,
+    jumlah: int = None,
+    total_harga: float = None,
+    catatan: str = None,
+    tanggal_tebar: str = None,
+    user_id: int = None,
+):
+    """
+    Update data bibit berdasarkan bibit_id dan user_id
+    """
+    db = get_db()
+    payload = {}
+
+    if kolam_id is not None:
+        payload["kolam_id"] = kolam_id
+    if ukuran_bibit is not None:
+        payload["ukuran_bibit"] = ukuran_bibit
+    if jumlah is not None:
+        payload["jumlah"] = jumlah
+    if total_harga is not None:
+        payload["total_harga"] = total_harga
+    if catatan is not None:
+        payload["catatan"] = catatan
+    if tanggal_tebar is not None:
+        payload["tanggal_tebar"] = tanggal_tebar
+
+    if not payload:
+        logger.warning(f"Tidak ada field untuk update bibit_id={bibit_id}")
+        return False
+
+    def db_call():
+        return (
+            db.table("Bibit")
+            .update(payload)
+            .eq("id", bibit_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
+
+    try:
+        result = await asyncio.to_thread(db_call)
+        if getattr(result, "data", None):
+            logger.info(f"Bibit {bibit_id} berhasil diupdate user_id={user_id}")
+            return True
+        else:
+            logger.warning(f"Gagal update bibit {bibit_id} user_id={user_id}")
+            return False
+    except Exception as e:
+        logger.error(f"Error edit_bibit bibit_id={bibit_id} user_id={user_id}: {e}")
+        return False
+
+
+# ============================================================
+# DELETE BIBIT
+# ============================================================
+async def delete_bibit(bibit_id: int, user_id: int = None):
+    """
+    Hapus bibit berdasarkan bibit_id dan user_id
+    """
+    db = get_db()
+
+    def db_call():
+        return (
+            db.table("Bibit")
+            .delete()
+            .eq("id", bibit_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
+
+    try:
+        result = await asyncio.to_thread(db_call)
+        if getattr(result, "data", None):
+            logger.info(f"Bibit {bibit_id} berhasil dihapus user_id={user_id}")
+            return True
+        else:
+            logger.warning(f"Gagal hapus bibit {bibit_id} user_id={user_id}")
+            return False
+    except Exception as e:
+        logger.error(f"Error delete_bibit bibit_id={bibit_id} user_id={user_id}: {e}")
+        return False

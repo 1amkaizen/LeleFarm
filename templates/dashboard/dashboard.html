@@ -44,23 +44,24 @@
     <table class="w-full md:min-w-[700px] table-auto border-collapse border text-center bg-white shadow rounded-lg overflow-hidden">
       <thead class="bg-blue-100 text-blue-700 font-semibold">
         <tr>
-          <th class="border px-3 py-2">Nama Kolam</th>
-          <th class="border px-3 py-2">Umur</th>
-          <th class="border px-3 py-2">Ukuran Bibit</th>
-          <th class="border px-3 py-2">Jumlah Bibit</th>
-          <th class="border px-3 py-2">Harga Bibit</th>
-          <th class="border px-3 py-2">Status</th>
+          <th class="border px-3 py-2"><i class="fas fa-water"></i> Nama Kolam</th>
+          <th class="border px-3 py-2"><i class="fas fa-clock"></i> Umur</th>
+          <th class="border px-3 py-2"><i class="fas fa-ruler"></i> Ukuran Bibit</th>
+          <th class="border px-3 py-2"><i class="fas fa-sort-numeric-up"></i> Jumlah Bibit</th>
+          <th class="border px-3 py-2"><i class="fas fa-dollar-sign"></i> Harga Bibit</th>
+          <th class="border px-3 py-2"><i class="fas fa-check-circle"></i> Status</th>
         </tr>
+        
       </thead>
-      <tbody class="divide-y divide-gray-200">
+      <tbody class="divide-y divide-gray-200" id="kolamTableBody">
         {% for b in bibit_entries %}
         <tr class="hover:bg-blue-50 transition">
-          <td class="border px-2 py-1 text-left">{{ b.nama_kolam }}</td>
-          <td class="border px-2 py-1">{{ b.umur_hari ~ ' hari' if b.umur_hari is not none else '-' }}</td>
-          <td class="border px-2 py-1">{{ b.ukuran_bibit ~ ' cm' if b.ukuran_bibit else '-' }}</td>
-          <td class="border px-2 py-1">{{ "{:,}".format(b.jumlah).replace(',', '.') }}</td>
-          <td class="border px-2 py-1">Rp {{ "{:,}".format(b.harga|int).replace(',', '.') }}</td>
-          <td class="border px-2 py-1">
+          <td class="border px-2 py-1 text-left whitespace-nowrap">{{ b.nama_kolam }}</td>
+          <td class="border px-2 py-1 whitespace-nowrap">{{ b.umur_hari ~ ' hari' if b.umur_hari is not none else '-' }}</td>
+          <td class="border px-2 py-1 whitespace-nowrap">{{ b.ukuran_bibit ~ ' cm' if b.ukuran_bibit else '-' }}</td>
+          <td class="border px-2 py-1 whitespace-nowrap">{{ "{:,}".format(b.jumlah).replace(',', '.') }}</td>
+          <td class="border px-2 py-1 whitespace-nowrap">Rp {{ "{:,}".format(b.harga|int).replace(',', '.') }}</td>
+          <td class="border px-2 py-1 whitespace-nowrap">
             {% if b.status == 'Sudah Panen' %}
               <span class="text-green-600 font-semibold"><i class="fas fa-check-circle"></i> {{ b.status }}</span>
             {% else %}
@@ -73,6 +74,20 @@
     </table>
   </div>
 </div>
+
+
+  <!-- Pagination Controls for Kolam -->
+  <div id="paginationControlsKolam" class="flex justify-center mt-4 space-x-2 mb-5">
+    <button id="prevBtnKolam" class="px-4 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-300" onclick="changePageKolam('prev')" disabled>
+      <i class="fas fa-arrow-left text-sm"></i>
+    </button>
+    <span id="pageInfoKolam" class="mx-2 text-sm text-gray-800 font-semibold">Page 1</span>
+    <button id="nextBtnKolam" class="px-4 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-300" onclick="changePageKolam('next')" disabled>
+      <i class="fas fa-arrow-right text-sm"></i>
+    </button>
+  </div>
+</div>
+
 
 <!-- Charts / Ringkasan Operasional -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
@@ -89,14 +104,28 @@
     <h3 class="font-semibold mb-2 flex items-center gap-2 text-blue-900">
       <i class="fas fa-wallet text-yellow-500"></i> Ringkasan Keuangan
     </h3>
-    <ul class="text-sm mb-2">
+  
+    <ul class="text-sm mb-2" id="pengeluaranList">
       {% for item in pengeluaran_detail %}
-        <li class="flex justify-between border-b py-1">
-          <span>{{ item.nama }} ({{ item.jumlah }})</span>
-          <span>Rp {{ "{:,}".format(item.total|int).replace(',', '.') }}</span>
-        </li>
+      <li class="pengeluaranRow flex justify-between border-b py-1">
+        <span>{{ item.nama }} ({{ item.jumlah }})</span>
+        <span>Rp {{ "{:,}".format(item.total|int).replace(',', '.') }}</span>
+      </li>
       {% endfor %}
     </ul>
+  
+    <!-- Pagination Controls for Pengeluaran -->
+    <div id="paginationControls" class="flex justify-center mt-4 space-x-2 mb-5">
+      <button id="prevBtn" class="px-4 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-300" onclick="changePage('prev')" disabled>
+        <i class="fas fa-arrow-left text-sm"></i>
+      </button>
+      <span id="pageInfo" class="mx-2 text-sm text-gray-800 font-semibold">Page 1</span>
+      <button id="nextBtn" class="px-4 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-300" onclick="changePage('next')" disabled>
+        <i class="fas fa-arrow-right text-sm"></i>
+      </button>
+    </div>
+    
+  
     <div class="border-t pt-2 mt-2 flex justify-between font-semibold text-blue-900">
       <span>Total</span>
       <span>Rp {{ pengeluaran_total or 0 }}</span>
@@ -327,5 +356,73 @@
     }
   });
   </script>
-  
+  <script>
+    // Pagination for Kolam
+    const rowsPerPageKolam = 5;
+    let currentPageKolam = 1;
+    const kolamRows = document.querySelectorAll('#kolamTableBody tr');
+    const totalRowsKolam = kolamRows.length;
+    const totalPagesKolam = Math.ceil(totalRowsKolam / rowsPerPageKolam);
+    
+    function showPageKolam(page) {
+      const startIdx = (page - 1) * rowsPerPageKolam;
+      const endIdx = startIdx + rowsPerPageKolam;
+    
+      kolamRows.forEach((row, index) => {
+        row.style.display = (index >= startIdx && index < endIdx) ? '' : 'none';
+      });
+    
+      document.getElementById('pageInfoKolam').innerText = `Page ${page} of ${totalPagesKolam}`;
+      document.getElementById('prevBtnKolam').disabled = page === 1;
+      document.getElementById('nextBtnKolam').disabled = page === totalPagesKolam;
+    }
+    
+    function changePageKolam(direction) {
+      if (direction === 'prev' && currentPageKolam > 1) {
+        currentPageKolam--;
+      } else if (direction === 'next' && currentPageKolam < totalPagesKolam) {
+        currentPageKolam++;
+      }
+    
+      showPageKolam(currentPageKolam);
+    }
+    
+    // Tampilkan halaman pertama saat pertama kali load
+    showPageKolam(currentPageKolam);
+    
+    
+    // Pagination for Pengeluaran
+    const rowsPerPage = 5;
+    let currentPage = 1;
+    const pengeluaranRows = document.querySelectorAll('.pengeluaranRow');
+    const totalRows = pengeluaranRows.length;
+    const totalPages = Math.ceil(totalRows / rowsPerPage);
+    
+    function showPage(page) {
+      const startIdx = (page - 1) * rowsPerPage;
+      const endIdx = startIdx + rowsPerPage;
+    
+      pengeluaranRows.forEach((row, index) => {
+        row.style.display = (index >= startIdx && index < endIdx) ? '' : 'none';
+      });
+    
+      document.getElementById('pageInfo').innerText = `Page ${page} of ${totalPages}`;
+      document.getElementById('prevBtn').disabled = page === 1;
+      document.getElementById('nextBtn').disabled = page === totalPages;
+    }
+    
+    function changePage(direction) {
+      if (direction === 'prev' && currentPage > 1) {
+        currentPage--;
+      } else if (direction === 'next' && currentPage < totalPages) {
+        currentPage++;
+      }
+    
+      showPage(currentPage);
+    }
+    
+    // Tampilkan halaman pertama saat pertama kali load
+    showPage(currentPage);
+    
+  </script>  
 {% endblock %}
