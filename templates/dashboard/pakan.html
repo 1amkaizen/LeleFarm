@@ -1,0 +1,151 @@
+<!-- templates/dashboard/pakan.html -->
+{% extends "dashboard/base.html" %}
+{% block title %}Pemberian Pakan{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb / Page title -->
+<div class="mb-6 flex items-center gap-2">
+  <i class="fas fa-utensils text-yellow-500 text-xl"></i>
+  <div>
+    <h1 class="text-2xl font-semibold text-blue-900 leading-tight">
+      {% block page_title %}Pemberian Pakan{% endblock %}
+    </h1>
+    <p class="text-sm text-blue-700 mt-0.5">
+      {% block page_subtitle %}Pencatatan pakan harian untuk monitoring pertumbuhan{% endblock %}
+    </p>
+  </div>
+</div>
+
+<!-- Form Tambah Pakan -->
+<form action="/dashboard/pakan/add" method="post" class="space-y-4 border bg-white p-4 rounded-lg shadow mb-6">
+  <h2 class="font-semibold mb-2 flex items-center gap-2 text-blue-900">
+    <i class="fas fa-plus-circle text-green-500"></i> Tambah Pakan
+  </h2>
+
+  <!-- Pilih Kolam -->
+  <div class="relative w-full" x-data="{ open: false, selected: null }">
+    <label class="block font-medium mb-1 text-blue-900"><i class="fas fa-water text-blue-500"></i> Pilih Kolam</label>
+    <div class="border rounded w-full p-2 cursor-pointer flex justify-between items-center focus:ring-2 focus:ring-blue-300"
+         @click="open = !open">
+      <span x-text="selected ? selected.nama : 'Pilih kolam...'"></span>
+      <i class="fas fa-chevron-down"></i>
+    </div>
+    <ul x-show="open" @click.outside="open = false"
+        class="absolute left-0 w-full bg-white border rounded mt-1 max-h-48 overflow-auto z-50 shadow">
+      {% for kolam in kolam_list %}
+      <li class="px-3 py-2 hover:bg-blue-50 cursor-pointer"
+          @click="selected = {id: {{ kolam.id }}, nama: '{{ kolam.nama_kolam }}'}; open=false;">
+        {{ kolam.nama_kolam }}
+      </li>
+      {% endfor %}
+    </ul>
+    <input type="hidden" name="kolam_id" :value="selected ? selected.id : ''" required>
+  </div>
+
+  <!-- Pilih Pakan -->
+  <div class="relative w-full" x-data="{ openPakan: false, selectedPakan: null }">
+    <label class="block font-medium mb-1 text-blue-900"><i class="fas fa-boxes text-yellow-500"></i> Pilih Pakan</label>
+    <div class="border rounded w-full p-2 cursor-pointer flex justify-between items-center focus:ring-2 focus:ring-blue-300"
+         @click="openPakan = !openPakan">
+      <span x-text="selectedPakan ? selectedPakan.nama : 'Pilih pakan...'"></span>
+      <i class="fas fa-chevron-down"></i>
+    </div>
+    <ul x-show="openPakan" @click.outside="openPakan = false"
+        class="absolute left-0 w-full bg-white border rounded mt-1 max-h-48 overflow-auto z-50 shadow">
+      {% for stok in pakan_stok_list %}
+      <li class="px-3 py-2 hover:bg-yellow-50 cursor-pointer"
+          @click="selectedPakan = {id: {{ stok.id }}, nama: '{{ stok.nama_pakan }}'}; openPakan=false;">
+        {{ stok.nama_pakan }}
+      </li>
+      {% endfor %}
+    </ul>
+    <input type="hidden" name="pakan_stok_id" :value="selectedPakan ? selectedPakan.id : ''" required>
+  </div>
+
+  <!-- Tanggal Pemberian Pakan -->
+  <label class="block font-medium text-blue-900"><i class="fas fa-calendar-alt text-indigo-500"></i> Tanggal Pemberian</label>
+  <input type="date" name="tanggal" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" required />
+
+  <!-- Jumlah Pakan -->
+  <label class="block font-medium text-blue-900"><i class="fas fa-weight-hanging text-yellow-500"></i> Jumlah Pakan</label>
+  <div class="flex gap-2">
+    <input type="number" name="jumlah" placeholder="Jumlah Pakan" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" min="0.1" step="0.1" required />
+    <select name="satuan" class="border rounded p-2 focus:ring-2 focus:ring-blue-300">
+      <option value="g">g</option>
+      <option value="kg">kg</option>
+    </select>
+  </div>
+
+  <!-- Catatan -->
+  <label class="block font-medium text-blue-900"><i class="fas fa-sticky-note text-gray-500"></i> Catatan (opsional)</label>
+  <textarea name="catatan" placeholder="Catatan (opsional)" class="border p-2 rounded w-full focus:ring-2 focus:ring-blue-300"></textarea>
+
+  <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 transition">
+    <i class="fas fa-save"></i> Simpan Pakan
+  </button>
+</form>
+
+<hr class="my-6" />
+
+<h2 class="text-xl font-semibold mb-2 flex items-center gap-2 text-blue-900">
+  <i class="fas fa-list text-indigo-500"></i> Riwayat Pakan
+</h2>
+
+<div class="overflow-x-auto mb-5">
+  <table class="table-auto w-full md:min-w-[700px] border-collapse border bg-white shadow rounded-lg overflow-hidden">
+    <thead class="bg-blue-100 text-blue-700 text-center font-semibold">
+      <tr>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-water"></i> Kolam</th>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-calendar-alt"></i> Tanggal</th>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-leaf"></i> Jenis Pakan</th>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-weight-hanging"></i> Jumlah</th>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-sticky-note"></i> Catatan</th>
+      </tr>
+    </thead>
+    <tbody class="text-center divide-y divide-gray-200">
+      {% for p in pakan_list %}
+      <tr class="hover:bg-blue-50 transition">
+        <td class="border px-2 py-1 whitespace-nowrap">{{ p.kolam_nama }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ p.tanggal }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ p.jenis_pakan }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">
+          {% if p.jumlah_gram >= 1000 %}
+            {{ "{:,.2f}".format(p.jumlah_gram / 1000)|replace(',', '.') }} kg
+          {% else %}
+            {{ "{:,.1f}".format(p.jumlah_gram)|replace(',', '.') }} g
+          {% endif %}
+        </td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ p.catatan or '-' }}</td>
+      </tr>
+      {% endfor %}
+      <tr class="font-semibold bg-blue-100">
+        <td class="border px-2 py-1 whitespace-nowrap" colspan="3"><i class="fas fa-weight-hanging text-yellow-500"></i> Total Semua Pakan</td>
+        <td class="border px-2 py-1 whitespace-nowrap">
+          {% set total = pakan_list|sum(attribute='jumlah_gram') %}
+          {% if total >= 1000 %}
+            {{ "{:,.2f}".format(total / 1000)|replace(',', '.') }} kg
+          {% else %}
+            {{ "{:,.1f}".format(total)|replace(',', '.') }} g
+          {% endif %}
+        </td>
+        <td class="border px-2 py-1 whitespace-nowrap"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const tanggalInput = document.querySelector('input[name="tanggal"]');
+    if(tanggalInput && !tanggalInput.value){
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      tanggalInput.value = `${yyyy}-${mm}-${dd}`;
+    }
+  });
+</script>
+
+{% endblock %}

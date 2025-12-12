@@ -1,0 +1,38 @@
+<!-- templates/base.html -->
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ title if title else "LeleFarm" }}</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+  <!-- Custom CSS (opsional) -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+
+  <!-- Header -->
+  <header class="bg-white shadow">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-xl font-bold">LeleFarm</h1>
+
+      <nav class="space-x-4">
+        <a href="/" class="text-sm hover:text-blue-600">Home</a>
+        <a href="/login" class="text-sm hover:text-blue-600">Login</a>
+        <a href="/register" class="text-sm hover:text-blue-600">Register</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="max-w-5xl mx-auto px-4 py-8">
+    {% block content %}{% endblock %}
+  </main>
+
+</body>
+</html>

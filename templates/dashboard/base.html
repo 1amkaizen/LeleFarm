@@ -1,0 +1,225 @@
+<!-- templates/dashboard/base.html -->
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{% block title %}Dashboard Kolam Lele{% endblock %}</title>
+
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      body {
+        overflow-x: hidden;
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background-color: #e0f2fe; /* bg-blue-100 */
+        color: #1e3a8a; /* text-blue-900 */
+      }
+
+      header {
+        background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        color: #ffffff;
+        flex-shrink: 0;
+      }
+
+      .sidebar {
+        background: linear-gradient(180deg, #2563eb, #3b82f6);
+        color: #ffffff;
+        width: 16rem;
+        flex-shrink: 0;
+        height: calc(100vh - 56px); /* minus header tinggi */
+        position: sticky;
+        top: 56px; /* tinggi header */
+        overflow-y: auto;
+      }
+
+      .sidebar a:hover {
+        background-color: #1d4ed8;
+      }
+
+      main {
+        background-color: #e0f2fe;
+        color: #1e3a8a;
+        flex: 1;
+        overflow-y: auto;
+        height: calc(100vh - 56px);
+      }
+
+      .sidebar i {
+        color: #ffffff;
+      }
+
+      .sidebar::-webkit-scrollbar {
+        width: 8px;
+      }
+      .sidebar::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+      }
+    </style>
+
+    {% block head_extra %}{% endblock %}
+  </head>
+  <body>
+    <!-- Topbar -->
+    <header class="border-b z-20 relative h-14">
+      <div
+        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-full"
+      >
+        <div class="flex items-center gap-4">
+          <button
+            id="sidebarToggle"
+            class="md:hidden p-2 rounded hover:bg-blue-300"
+            aria-label="Toggle sidebar"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+          <a href="/" class="text-lg font-semibold flex items-center gap-2">
+            <i class="fas fa-fish"></i> LeleFarm
+          </a>
+        </div>
+        <div class="hidden sm:flex items-center gap-4">
+          <span class="text-sm flex items-center gap-1">
+            <i class="fas fa-user"></i> Halo, <strong>{{ username }}</strong>
+          </span>
+          <a
+            href="/logout"
+            class="text-sm px-3 py-1 rounded hover:bg-blue-300 flex items-center gap-1"
+          >
+            <i class="fas fa-sign-out-alt text-red-500"></i> Logout
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Wrapper -->
+    <div class="flex flex-1 w-full">
+      <!-- Overlay mobile -->
+      <div
+        id="sidebarOverlay"
+        class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden"
+      ></div>
+
+      <!-- Sidebar -->
+      <aside
+        id="sidebar"
+        class="sidebar fixed md:static z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 shadow-lg"
+      >
+        <nav class="p-4">
+          <ul class="space-y-1">
+            <li>
+              <a
+                href="/dashboard"
+                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path == '/dashboard' %}bg-blue-700{% endif %}"
+                ><i class="fas fa-chart-bar text-white"></i>
+                <span>Dashboard</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="/dashboard/kolam"
+                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path.startswith('/dashboard/kolam') %}bg-blue-700{% endif %}"
+                ><i class="fas fa-water text-white"></i> <span>Kolam</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="/dashboard/bibit"
+                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path.startswith('/dashboard/bibit') %}bg-blue-700{% endif %}"
+                ><i class="fas fa-fish text-white"></i> <span>Bibit</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="/dashboard/pakan_stok"
+                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path == '/dashboard/pakan_stok' %}bg-blue-700{% endif %}"
+              >
+                <i class="fas fa-boxes text-white"></i>
+                <span>Stok Pakan</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="/dashboard/pakan"
+                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path == '/dashboard/pakan' %}bg-blue-700{% endif %}"
+              >
+                <i class="fas fa-utensils text-white"></i>
+                <span>Pemberian Pakan</span>
+              </a>
+            </li>
+            
+            
+            <li>
+              <a
+                href="/dashboard/kematian"
+                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path.startswith('/dashboard/kematian') %}bg-blue-700{% endif %}"
+                ><i class="fas fa-skull-crossbones text-white"></i>
+                <span>Kematian</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="/dashboard/pengeluaran"
+                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path.startswith('/dashboard/pengeluaran') %}bg-blue-700{% endif %}"
+                ><i class="fas fa-wallet text-white"></i>
+                <span>Pengeluaran</span></a
+              >
+            </li>
+            <li>
+              <a
+                href="/dashboard/prediksi"
+                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path.startswith('/dashboard/prediksi') %}bg-blue-700{% endif %}"
+                ><i class="fas fa-robot text-white"></i>
+                <span>Prediksi Panen</span></a
+              >
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- Konten utama -->
+      <main id="mainContent" class="flex-1 min-w-0 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">{% block content %}{% endblock %}</div>
+      </main>
+    </div>
+
+    <!-- Script toggle sidebar mobile -->
+    <script>
+      const sidebarToggle = document.getElementById("sidebarToggle");
+      const sidebar = document.getElementById("sidebar");
+      const overlay = document.getElementById("sidebarOverlay");
+
+      sidebarToggle?.addEventListener("click", () => {
+        sidebar.classList.toggle("-translate-x-full");
+        overlay.classList.toggle("hidden");
+      });
+
+      overlay?.addEventListener("click", () => {
+        sidebar.classList.add("-translate-x-full");
+        overlay.classList.add("hidden");
+      });
+    </script>
+
+    {% block body_extra %}{% endblock %}
+  </body>
+</html>

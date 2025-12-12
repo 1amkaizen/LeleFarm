@@ -1,0 +1,195 @@
+# routes/dashboard.py
+# Dashboard user (filter wajib: user_id)
+
+import logging
+import asyncio
+from fastapi import APIRouter, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
+from datetime import datetime
+
+from services.user import get_user_by_id
+from services.kolam import get_all_kolam, get_kolam_status
+from services.kematian import get_all_kematian
+from services.bibit import get_all_bibit
+from services.pengeluaran import get_all_pengeluaran
+from services.pakan import get_all_pakan
+
+router = APIRouter()
+logger = logging.getLogger("router_dashboard")
+
+
+@router.get("/dashboard", response_class=HTMLResponse)
+async def dashboard(request: Request):
+    # Ambil user_id dari cookie
+    user_id = request.cookies.get("user_id")
+    if not user_id:
+        logger.warning("Akses dashboard ditolak: user belum login.")
+        return RedirectResponse(url="/login", status_code=303)
+
+    user_id = int(user_id)
+    user = await get_user_by_id(user_id)
+    username = user["username"] if user else "User"
+
+    logger.info(f"User {username} mengakses dashboard.")
+
+    # ============================
+    # AMBIL DATA (WAJIB FILTER USER)
+    # ============================
+
+    kolam_list_raw = await get_all_kolam(user_id)
+    kolam_list = [dict(k) for k in kolam_list_raw]
+
+    kematian_list = await get_all_kematian(user_id)
+    bibit_list = await get_all_bibit(user_id)
+    pengeluaran_list = await get_all_pengeluaran(user_id)
+    pakan_list = await get_all_pakan(user_id)
+
+    # --- Tambah status panen ke tiap kolam ---
+    for k in kolam_list:
+        k["status"] = get_kolam_status(k)
+
+    # ============================
+    # HITUNG DATA KOLAM
+    # ============================
+
+    total_kolam = len(kolam_list)
+    kolam_aktif = len([k for k in kolam_list if k.get("status") == "Belum Panen"])
+    kolam_nonaktif = total_kolam - kolam_aktif
+
+    # ============================
+    # HITUNG BIBIT & KEMATIAN
+    # ============================
+
+    total_bibit = sum(b.get("jumlah", 0) for b in bibit_list)
+    total_kematian = sum(k.get("jumlah", 0) for k in kematian_list)
+
+    bibit_per_kolam = {}
+    for k in kolam_list:
+        kolam_id = k.get("id")
+
+        bibit_per_kolam[kolam_id] = sum(
+            b.get("jumlah", 0) for b in bibit_list if b.get("kolam_id") == kolam_id
+        )
+
+        kematian_kolam = sum(
+            km.get("jumlah", 0)
+            for km in kematian_list
+            if km.get("kolam_id") == kolam_id
+        )
+
+        total_b = bibit_per_kolam[kolam_id]
+        k["persentase_kematian"] = (kematian_kolam / total_b * 100) if total_b else 0
+
+    # ============================
+    # TABELL BIBIT ENTRY
+    # ============================
+
+    bibit_entries = []
+    for b in bibit_list:
+        kolam_id = b.get("kolam_id")
+        nama_kolam = next(
+            (k.get("nama_kolam") for k in kolam_list if k.get("id") == kolam_id), "-"
+        )
+
+        tanggal_tebar = b.get("tanggal_tebar")
+        umur_hari = None
+        if tanggal_tebar:
+            try:
+                start_date = datetime.strptime(tanggal_tebar, "%Y-%m-%d")
+                umur_hari = (datetime.now() - start_date).days
+            except Exception as e:
+                logger.error(f"Gagal hitung umur bibit di kolam {nama_kolam}: {e}")
+
+        kematian_kolam = sum(
+            km.get("jumlah", 0)
+            for km in kematian_list
+            if km.get("kolam_id") == kolam_id
+        )
+
+        pakan_total = sum(
+            p.get("jumlah_gram", 0) for p in pakan_list if p.get("kolam_id") == kolam_id
+        )
+
+        bibit_entries.append(
+            {
+                "kolam_id": kolam_id,
+                "nama_kolam": nama_kolam,
+                "jumlah": b.get("jumlah", 0),
+                "harga": b.get("total_harga", 0),
+                "ukuran_bibit": b.get("ukuran_bibit", "-"),
+                "tanggal_tebar": tanggal_tebar,
+                "umur_hari": umur_hari,
+                "status": next(
+                    (k.get("status") for k in kolam_list if k.get("id") == kolam_id),
+                    "-",
+                ),
+                "kematian": kematian_kolam,
+                "pakan_total": pakan_total,
+            }
+        )
+
+    # ============================
+    # PENGELUARAN
+    # ============================
+
+    pengeluaran_detail = [
+        {
+            "nama": p.get("nama_pengeluaran") or (p.get("catatan") or "Pengeluaran"),
+            "jumlah": p.get("jumlah", 1),
+            "harga": p.get("harga", 0),
+            "total": p.get("harga", 0) * p.get("jumlah", 1),
+        }
+        for p in pengeluaran_list
+    ]
+
+    bibit_detail = [
+        {
+            "nama": f"Bibit ({b.get('ukuran_bibit', '-')})",
+            "jumlah": b.get("jumlah", 0),
+            "harga": b.get("total_harga", 0),
+            "total": b.get("total_harga", 0),
+        }
+        for b in bibit_list
+    ]
+
+    pengeluaran_detail += bibit_detail
+    pengeluaran_total = sum(item["total"] for item in pengeluaran_detail)
+    pengeluaran_formatted = "{:,}".format(int(pengeluaran_total)).replace(",", ".")
+
+    # ============================
+    # PAKAN
+    # ============================
+
+    total_pakan_gram = sum(p.get("jumlah_gram", 0) for p in pakan_list)
+    total_pakan = (
+        f"{total_pakan_gram / 1000:.2f} kg"
+        if total_pakan_gram >= 1000
+        else f"{total_pakan_gram:.1f} g"
+    )
+
+    rasio_pakan = (total_pakan_gram / total_bibit * 1000) if total_bibit else 0
+
+    # ============================
+    # RENDER DASHBOARD
+    # ============================
+
+    return request.app.templates.TemplateResponse(
+        "dashboard/dashboard.html",
+        {
+            "request": request,
+            "username": username,
+            "kolam_list": kolam_list,
+            "total_bibit": total_bibit,
+            "total_kematian": total_kematian,
+            "bibit_entries": bibit_entries,
+            "pengeluaran_total": pengeluaran_formatted,
+            "pengeluaran_detail": pengeluaran_detail,
+            "total_pakan": total_pakan,
+            "total_kolam": total_kolam,
+            "kolam_aktif": kolam_aktif,
+            "kolam_nonaktif": kolam_nonaktif,
+            "rasio_pakan": rasio_pakan,
+            "bibit_per_kolam": bibit_per_kolam,
+            "kematian_list": kematian_list,
+        },
+    )

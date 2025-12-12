@@ -1,0 +1,174 @@
+<!-- templates/dashboard/kolam.html -->
+{% extends "dashboard/base.html" %}
+{% block title %}Kelola Kolam{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex items-center gap-2">
+  <i class="fas fa-water text-blue-500 text-xl"></i>
+  <div>
+    <h1 class="text-2xl font-semibold text-blue-900 leading-tight">
+      {% block page_title %}Kelola Kolam{% endblock %}
+    </h1>
+    <p class="text-sm text-blue-700 mt-0.5">
+      {% block page_subtitle %}Manajemen kolam, kapasitas, dan status operasional{% endblock %}
+    </p>
+  </div>
+</div>
+
+<form action="/dashboard/kolam" method="post" class="space-y-4 border bg-white p-4 rounded-lg shadow mb-6">
+  <div>
+    <label for="kolam_baru" class="block font-medium text-blue-900"><i class="fas fa-plus-circle text-green-500"></i> Buat kolam baru</label>
+    <input type="text" id="kolam_baru" name="kolam_baru" placeholder="Nama kolam baru" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none" />
+  </div>
+  <div>
+    <label for="kapasitas_bibit" class="block font-medium text-blue-900"><i class="fas fa-fish text-indigo-500"></i> Kapasitas Bibit</label>
+    <input type="number" id="kapasitas_bibit" name="kapasitas_bibit" placeholder="Jumlah bibit" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none" />
+  </div>
+  <div>
+    <label for="tanggal_mulai" class="block font-medium text-blue-900"><i class="fas fa-calendar-alt text-yellow-500"></i> Tanggal Mulai</label>
+    <input type="date" id="tanggal_mulai" name="tanggal_mulai" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none" />
+  </div>
+  <div>
+    <label for="catatan" class="block font-medium text-blue-900"><i class="fas fa-sticky-note text-gray-500"></i> Catatan</label>
+    <textarea id="catatan" name="catatan" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"></textarea>
+  </div>
+  <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 transition">
+    <i class="fas fa-save"></i> Simpan
+  </button>
+</form>
+
+<div class="overflow-x-auto">
+  <table class="w-full md:min-w-[900px] table-auto border-collapse border bg-white shadow rounded-lg overflow-hidden">
+    <thead class="bg-blue-100 text-blue-700 font-semibold">
+      <tr>
+        <th class="border px-3 py-2">ID</th>
+        <th class="border px-3 py-2">Nama Kolam</th>
+        <th class="border px-3 py-2">Kapasitas</th>
+        <th class="border px-3 py-2">Tanggal Mulai</th>
+        <th class="border px-3 py-2">Status</th>
+        <th class="border px-3 py-2">Aksi</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200">
+      {% for kolam in kolam_list %}
+      <tr class="hover:bg-blue-50 transition">
+        <td class="border px-2 py-1">{{ kolam.id }}</td>
+        <td class="border px-2 py-1">{{ kolam.nama_kolam }}</td>
+        <td class="border px-2 py-1">{{ "{:,}".format(kolam.kapasitas_bibit).replace(',', '.') }}</td>
+        <td class="border px-2 py-1">{{ kolam.tanggal_mulai }}</td>
+        <td class="border px-2 py-1">
+          {% if kolam.status == 'Aktif' %}
+            <span class="text-green-600 font-semibold"><i class="fas fa-check-circle"></i> {{ kolam.status }}</span>
+          {% else %}
+            <span class="text-red-600 font-semibold"><i class="fas fa-times-circle"></i> {{ kolam.status }}</span>
+          {% endif %}
+        </td>
+        <td class="border px-2 py-1">
+          <div class="flex flex-wrap justify-center gap-1">
+            <button
+              class="bg-yellow-400 hover:bg-yellow-500 text-white text-sm md:text-base px-2 py-1 md:px-3 md:py-1.5 rounded flex items-center gap-1 transition"
+              onclick="openEditModal({{ kolam.id }}, '{{ kolam.nama_kolam }}', {{ kolam.kapasitas_bibit }}, '{{ kolam.tanggal_mulai }}', '{{ kolam.catatan|default('') }}')"
+            >
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button
+              type="button"
+              class="bg-red-500 hover:bg-red-600 text-white text-sm md:text-base px-2 py-1 md:px-3 md:py-1.5 rounded flex items-center gap-1 transition"
+              onclick="openDeleteModal({{ kolam.id }})"
+            >
+              <i class="fas fa-trash-alt"></i> Delete
+            </button>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal Edit Kolam -->
+<div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+    <h2 class="text-lg font-semibold text-blue-900 mb-4">Edit Kolam</h2>
+    <form id="editForm" method="post" action="/dashboard/kolam/edit">
+      <input type="hidden" name="kolam_id" id="edit_id" />
+      <div class="mb-3">
+        <label class="block text-sm font-medium text-blue-900">Nama Kolam</label>
+        <input type="text" id="edit_nama" name="nama_kolam" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"/>
+      </div>
+      <div class="mb-3">
+        <label class="block text-sm font-medium text-blue-900">Kapasitas</label>
+        <input type="number" id="edit_kapasitas" name="kapasitas_bibit" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"/>
+      </div>
+      <div>
+        <label for="tanggal_mulai" class="block font-medium text-blue-900"><i class="fas fa-calendar-alt text-yellow-500"></i> Tanggal Mulai</label>
+        <input type="date" id="tanggal_mulai" name="tanggal_mulai" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none" />
+      </div>
+      <div class="mb-3">
+        <label class="block text-sm font-medium text-blue-900">Catatan</label>
+        <textarea id="edit_catatan" name="catatan" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"></textarea>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button type="button" onclick="closeEditModal()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Batal</button>
+        <button type="submit" class="px-4 py-2 rounded bg-blue-500 hover:bg-blue-600 text-white">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Delete Kolam -->
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-sm p-6 relative">
+    <h2 class="text-lg font-semibold text-blue-900 mb-4">Hapus Kolam?</h2>
+    <form id="deleteForm" method="post" action="/dashboard/kolam/delete">
+      <input type="hidden" name="kolam_id" id="delete_id" />
+      <div class="flex justify-end gap-2">
+        <button type="button" onclick="closeDeleteModal()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Batal</button>
+        <button type="submit" class="px-4 py-2 rounded bg-red-500 hover:bg-red-600 text-white">Hapus</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<script>
+  function openEditModal(id, nama, kapasitas, tanggal, catatan){
+    document.getElementById('edit_id').value = id;
+    document.getElementById('edit_nama').value = nama;
+    document.getElementById('edit_kapasitas').value = kapasitas;
+    document.getElementById('edit_tanggal').value = tanggal;
+    document.getElementById('edit_catatan').value = catatan;
+    document.getElementById('editModal').classList.remove('hidden');
+  }
+  function closeEditModal(){
+    document.getElementById('editModal').classList.add('hidden');
+  }
+
+  function openDeleteModal(id){
+    document.getElementById('delete_id').value = id;
+    document.getElementById('deleteModal').classList.remove('hidden');
+  }
+  function closeDeleteModal(){
+    document.getElementById('deleteModal').classList.add('hidden');
+  }
+</script>
+<script>
+  // Set default tanggal mulai ke hari ini saat halaman load
+  document.addEventListener('DOMContentLoaded', () => {
+    const tanggalInput = document.getElementById('tanggal_mulai');
+    if(tanggalInput && !tanggalInput.value){
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      tanggalInput.value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    // Buat juga modal edit default tanggal
+    const editTanggal = document.getElementById('edit_tanggal');
+    if(editTanggal && !editTanggal.value){
+      editTanggal.value = `${yyyy}-${mm}-${dd}`;
+    }
+  });
+</script>
+{% endblock %}

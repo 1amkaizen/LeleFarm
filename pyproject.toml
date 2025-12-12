@@ -1,0 +1,25 @@
+[project]
+name = "lelefarm"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "1amkaizen",email = "1amkaiz3n@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "gunicorn (>=23.0.0,<24.0.0)",
+    "uvicorn (>=0.38.0,<0.39.0)",
+    "python-dotenv (>=1.2.1,<2.0.0)",
+    "fastapi (>=0.124.0,<0.125.0)",
+    "jinja2 (>=3.1.6,<4.0.0)",
+    "passlib (>=1.7.4,<2.0.0)",
+    "supabase (>=2.25.0,<3.0.0)",
+    "python-multipart (>=0.0.20,<0.0.21)",
+    "itsdangerous (>=2.2.0,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

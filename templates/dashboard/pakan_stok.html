@@ -1,0 +1,194 @@
+<!-- templates/dashboard/pakan_stok.html -->
+{% extends "dashboard/base.html" %}
+{% block title %}Stok Pakan{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex items-center gap-2">
+  <i class="fas fa-boxes text-yellow-500 text-xl"></i>
+  <div>
+    <h1 class="text-2xl font-semibold text-blue-900 leading-tight">
+      {% block page_title %}Kelola Stok Pakan{% endblock %}
+    </h1>
+    <p class="text-sm text-blue-700 mt-0.5">
+      {% block page_subtitle %}Manajemen stok pakan harian{% endblock %}
+    </p>
+  </div>
+</div>
+
+<!-- Form Tambah Stok Pakan -->
+<form action="/dashboard/pakan_stok/add" method="post" class="space-y-4 border bg-white p-4 rounded-lg shadow mb-6">
+  <h2 class="font-semibold mb-2 flex items-center gap-2 text-blue-900">
+    <i class="fas fa-plus-circle text-green-500"></i> Tambah Stok Pakan
+  </h2>
+
+  <label class="block font-medium text-blue-900"><i class="fas fa-leaf text-green-500"></i> Nama Pakan</label>
+  <input type="text" name="nama_pakan" placeholder="Nama Pakan (Pelet, Cacing...)" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" required />
+
+  <label class="block font-medium text-blue-900"><i class="fas fa-weight-hanging text-yellow-500"></i> Jumlah Stok</label>
+  <div class="flex gap-2">
+    <input type="number" name="jumlah" placeholder="Jumlah stok pakan" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" min="0" step="0.01" required />
+    <select name="satuan" class="border rounded p-2 focus:ring-2 focus:ring-blue-300">
+      <option value="g">g</option>
+      <option value="kg">kg</option>
+    </select>
+  </div>
+
+  <label class="block font-medium text-blue-900"><i class="fas fa-money-bill-wave text-green-500"></i> Harga Total (Rp)</label>
+  <input type="number" name="harga" placeholder="Harga total pakan" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" min="0" step="0.01" required />
+
+  <label class="block font-medium text-blue-900"><i class="fas fa-calendar-alt text-indigo-500"></i> Tanggal Masuk</label>
+  <input type="date" name="tanggal_masuk" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" required />
+
+  <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 transition">
+    <i class="fas fa-save"></i> Simpan Stok
+  </button>
+</form>
+
+<hr class="my-6" />
+
+<h2 class="text-xl font-semibold mb-2 flex items-center gap-2 text-blue-900">
+  <i class="fas fa-list text-indigo-500"></i> Daftar Stok Pakan
+</h2>
+
+<div class="overflow-x-auto mb-5">
+  <table class="table-auto w-full md:min-w-[800px] border-collapse border bg-white shadow rounded-lg overflow-hidden">
+    <thead class="bg-blue-100 text-blue-700 text-center font-semibold">
+      <tr>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-leaf"></i> Nama Pakan</th>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-weight-hanging"></i> Jumlah</th>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-money-bill-wave"></i> Harga Total (Rp)</th>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-calendar-alt"></i> Tanggal Masuk</th>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-cogs"></i> Aksi</th>
+      </tr>
+    </thead>
+    <tbody class="text-center divide-y divide-gray-200">
+      {% for p in stok_list %}
+      <tr class="hover:bg-blue-50 transition">
+        <td class="border px-2 py-1 whitespace-nowrap">{{ p["nama_pakan"] }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ "{:,.2f}".format(p["jumlah"])|replace(',', '.') }} {{ p["satuan"] or "g" }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">Rp {{ "{:,.0f}".format(p["harga"])|replace(',', '.') }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ p["tanggal_masuk"] or "-" }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap flex justify-center gap-2">
+          <button class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded flex items-center gap-1 text-sm"
+                  onclick="openEditModal({{ p['id'] }}, '{{ p['nama_pakan'] }}', {{ p['jumlah'] }}, '{{ p['satuan'] }}', {{ p['harga'] }}, '{{ p['tanggal_masuk'] }}')">
+            <i class="fas fa-edit"></i> Edit
+          </button>
+          <button class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded flex items-center gap-1 text-sm"
+                  onclick="openDeleteModal({{ p['id'] }}, '{{ p['nama_pakan'] }}')">
+            <i class="fas fa-trash"></i> Hapus
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+      <tr class="font-semibold bg-blue-100">
+        <td class="border px-2 py-1 whitespace-nowrap" colspan="1">
+            <i class="fas fa-weight-hanging text-yellow-500"></i> Total
+        </td>
+        <td class="border px-2 py-1 whitespace-nowrap">
+            {% if total_jumlah_g >= 1000 %}
+                {{ "{:,.2f}".format(total_jumlah_g / 1000)|replace(',', '.') }} kg
+            {% else %}
+                {{ "{:,.0f}".format(total_jumlah_g)|replace(',', '.') }} g
+            {% endif %}
+        </td>
+        <td class="border px-2 py-1 whitespace-nowrap">Rp {{ "{:,.0f}".format(total_harga)|replace(',', '.') }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap" colspan="2"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal Edit Stok Pakan -->
+<div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+    <h2 class="text-lg font-semibold text-blue-900 mb-4">Edit Stok Pakan</h2>
+    <form id="editForm" method="post" action="/dashboard/pakan_stok/edit">
+      <input type="hidden" name="pakan_stok_id" id="edit_id">
+      <div class="mb-3">
+        <label class="block text-sm font-medium text-blue-900">Nama Pakan</label>
+        <input type="text" id="edit_nama" name="nama_pakan" class="border rounded p-2 w-full" required>
+      </div>
+      <div class="mb-3">
+        <label class="block text-sm font-medium text-blue-900">Jumlah</label>
+        <input type="number" id="edit_jumlah" name="jumlah" step="0.01" class="border rounded p-2 w-full" required>
+      </div>
+      <div class="mb-3">
+        <label class="block text-sm font-medium text-blue-900">Satuan</label>
+        <select id="edit_satuan" name="satuan" class="border rounded p-2 w-full">
+          <option value="g">g</option>
+          <option value="kg">kg</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="block text-sm font-medium text-blue-900">Harga</label>
+        <input type="number" id="edit_harga" name="harga" step="0.01" class="border rounded p-2 w-full" required>
+      </div>
+      <div class="mb-3">
+        <label class="block text-sm font-medium text-blue-900">Tanggal Masuk</label>
+        <input type="date" id="edit_tanggal" name="tanggal_masuk" class="border rounded p-2 w-full" required>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button type="button" onclick="closeEditModal()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Batal</button>
+        <button type="submit" class="px-4 py-2 rounded bg-blue-500 hover:bg-blue-600 text-white">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Delete Stok Pakan -->
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-sm p-6 relative">
+    <h2 class="text-lg font-semibold text-blue-900 mb-4">Hapus Stok Pakan?</h2>
+    <p>Yakin ingin menghapus stok <span id="delete_nama"></span>?</p>
+    <form id="deleteForm" method="post" action="/dashboard/pakan_stok/delete">
+      <input type="hidden" name="pakan_stok_id" id="delete_id">
+      <div class="flex justify-end gap-2 mt-4">
+        <button type="button" onclick="closeDeleteModal()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Batal</button>
+        <button type="submit" class="px-4 py-2 rounded bg-red-500 hover:bg-red-600 text-white">Hapus</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openEditModal(id, nama, jumlah, satuan, harga, tanggal){
+    document.getElementById('edit_id').value = id;
+    document.getElementById('edit_nama').value = nama;
+    document.getElementById('edit_jumlah').value = jumlah;
+    document.getElementById('edit_satuan').value = satuan || 'g';
+    document.getElementById('edit_harga').value = harga;
+    document.getElementById('edit_tanggal').value = tanggal;
+    document.getElementById('editModal').classList.remove('hidden');
+  }
+  function closeEditModal(){ document.getElementById('editModal').classList.add('hidden'); }
+
+  function openDeleteModal(id, nama){
+    document.getElementById('delete_id').value = id;
+    document.getElementById('delete_nama').innerText = nama;
+    document.getElementById('deleteModal').classList.remove('hidden');
+  }
+  function closeDeleteModal(){ document.getElementById('deleteModal').classList.add('hidden'); }
+</script>
+<script>
+  // Set default tanggal masuk ke hari ini saat halaman load
+  document.addEventListener('DOMContentLoaded', () => {
+    const tanggalInput = document.querySelector('input[name="tanggal_masuk"]');
+    const editTanggal = document.getElementById('edit_tanggal');
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+
+    if(tanggalInput && !tanggalInput.value){
+      tanggalInput.value = todayStr;
+    }
+
+    if(editTanggal && !editTanggal.value){
+      editTanggal.value = todayStr;
+    }
+  });
+</script>
+
+{% endblock %}

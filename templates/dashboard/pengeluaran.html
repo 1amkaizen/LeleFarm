@@ -1,0 +1,102 @@
+<!-- templates/dashboard/pengeluaran.html -->
+{% extends "dashboard/base.html" %}
+{% block title %}Pengeluaran{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb / Page title -->
+<div class="mb-6 flex items-center gap-2">
+  <i class="fas fa-money-bill-wave text-green-500 text-xl"></i>
+  <div>
+    <h1 class="text-2xl font-semibold text-green-700 leading-tight">
+      {% block page_title %}Pengeluaran{% endblock %}
+    </h1>
+    <p class="text-sm text-green-600 mt-0.5">
+      {% block page_subtitle %}Pencatatan biaya operasional untuk monitoring keuangan{% endblock %}
+    </p>
+  </div>
+</div>
+
+<!-- Form Pengeluaran Baru -->
+<form action="/dashboard/pengeluaran" method="post" class="space-y-4 border bg-white p-4 rounded-lg shadow mb-6">
+  <h2 class="font-semibold mb-2 flex items-center gap-2 text-green-700"><i class="fas fa-plus-circle text-green-500"></i> Tambah Pengeluaran</h2>
+
+  <div>
+    <label class="block font-medium text-blue-900"><i class="fas fa-tag text-blue-500"></i> Nama Pengeluaran</label>
+    <input type="text" name="nama" placeholder="Nama Pengeluaran" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" required />
+  </div>
+
+  <div>
+    <label class="block font-medium text-blue-900"><i class="fas fa-sort-numeric-up text-indigo-500"></i> Jumlah</label>
+    <input type="number" name="jumlah" placeholder="Jumlah" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" value="1" min="1" step="1" required />
+  </div>
+
+  <div>
+    <label class="block font-medium text-blue-900"><i class="fas fa-coins text-yellow-500"></i> Harga per Unit (Rp)</label>
+    <input type="number" name="harga" placeholder="Harga per Unit (Rp)" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" required />
+  </div>
+
+  <div>
+    <label class="block font-medium text-blue-900"><i class="fas fa-calendar-alt text-indigo-500"></i> Tanggal</label>
+    <input type="date" name="tanggal" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" required />
+  </div>
+
+  <div>
+    <label class="block font-medium text-blue-900"><i class="fas fa-sticky-note text-gray-500"></i> Catatan</label>
+    <textarea name="catatan" placeholder="Catatan" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300"></textarea>
+  </div>
+
+  <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2 transition">
+    <i class="fas fa-save"></i> Simpan Pengeluaran
+  </button>
+</form>
+
+<h2 class="text-xl font-semibold mb-2 flex items-center gap-2 text-green-700"><i class="fas fa-list text-green-500"></i> Daftar Pengeluaran</h2>
+<div class="overflow-x-auto">
+  <table class="w-full md:min-w-[900px] table-auto border-collapse border bg-white shadow rounded-lg overflow-hidden text-center">
+    <thead class="bg-blue-100 text-blue-700 font-semibold">
+      <tr>
+        <th class="border px-2 py-1 whitespace-nowrap">ID</th>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-tag"></i> Nama</th>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-sort-numeric-up"></i> Jumlah</th>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-coins"></i> Harga/unit</th>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-money-bill-wave"></i> Total</th>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-calendar-alt"></i> Tanggal</th>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-sticky-note"></i> Catatan</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200">
+      {% for pengeluaran in pengeluaran_list %}
+      <tr class="hover:bg-blue-50 transition">
+        <td class="border px-2 py-1 whitespace-nowrap">{{ pengeluaran.id }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ pengeluaran.nama_pengeluaran }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ pengeluaran.jumlah }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">Rp {{ "{:,.0f}".format(pengeluaran.harga)|replace(',', '.') }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">Rp {{ "{:,.0f}".format(pengeluaran.total)|replace(',', '.') }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ pengeluaran.tanggal }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ pengeluaran.catatan or '-' }}</td>
+      </tr>
+      {% endfor %}
+      <tr class="font-semibold bg-blue-100">
+        <td class="border px-2 py-1 whitespace-nowrap" colspan="4"><i class="fas fa-money-bill-wave text-green-500"></i> Total Keseluruhan</td>
+        <td class="border px-2 py-1 whitespace-nowrap">Rp {{ "{:,.0f}".format(grand_total)|replace(',', '.') }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap" colspan="2"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const tanggalInput = document.querySelector('input[name="tanggal"]');
+    if(tanggalInput && !tanggalInput.value){
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      tanggalInput.value = `${yyyy}-${mm}-${dd}`;
+    }
+  });
+</script>
+
+
+{% endblock %}

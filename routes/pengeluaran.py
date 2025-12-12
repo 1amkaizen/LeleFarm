@@ -1,0 +1,94 @@
+# routes/dashboard/pengeluaran.py
+# Lokasi file: routes/dashboard/pengeluaran.py
+
+import logging
+from fastapi import APIRouter, Request, Form
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
+
+from services.pengeluaran import (
+    get_all_pengeluaran,
+    create_pengeluaran,
+)
+
+router = APIRouter()
+logger = logging.getLogger("router_pengeluaran")
+templates = Jinja2Templates(directory="templates")
+
+
+@router.get("/dashboard/pengeluaran", response_class=HTMLResponse)
+async def pengeluaran_page(request: Request):
+    """
+    Halaman daftar pengeluaran — mengambil user dari cookies
+    """
+    user_id = request.cookies.get("user_id")
+    if not user_id:
+        logger.warning("Akses halaman pengeluaran ditolak: user belum login.")
+        return RedirectResponse("/login", status_code=303)
+
+    user_id = int(user_id)
+
+    # --- Ambil data pengeluaran user ---
+    pengeluaran_list = [dict(p) for p in await get_all_pengeluaran(user_id)]
+
+    # Hitung total tiap item
+    for p in pengeluaran_list:
+        p["harga"] = float(p.get("harga", 0))
+        p["jumlah"] = int(p.get("jumlah", 0))
+        p["total"] = p["harga"] * p["jumlah"]
+
+    grand_total = sum(p["total"] for p in pengeluaran_list)
+
+    logger.info(
+        f"[USER {user_id}] Render pengeluaran_page: {len(pengeluaran_list)} item"
+    )
+
+    return templates.TemplateResponse(
+        "dashboard/pengeluaran.html",
+        {
+            "request": request,
+            "pengeluaran_list": pengeluaran_list,
+            "grand_total": grand_total,
+        },
+    )
+
+
+@router.post("/dashboard/pengeluaran")
+async def pengeluaran_submit(
+    request: Request,
+    nama: str = Form(...),
+    harga: float = Form(...),
+    jumlah: int = Form(1),
+    tanggal: str = Form(...),
+    catatan: str = Form(None),
+):
+    """
+    Submit pengeluaran — user_id via cookies
+    """
+    user_id = request.cookies.get("user_id")
+    if not user_id:
+        logger.warning("Submit pengeluaran ditolak: user belum login.")
+        return RedirectResponse("/login", status_code=303)
+
+    user_id = int(user_id)
+
+    logger.info(
+        f"[USER {user_id}] Tambah pengeluaran: nama={nama}, harga={harga}, jumlah={jumlah}"
+    )
+
+    # --- update: pakai await karena service async ---
+    result = await create_pengeluaran(
+        user_id=user_id,
+        nama_pengeluaran=nama,
+        harga=harga,
+        jumlah=jumlah,
+        tanggal=tanggal,
+        catatan=catatan,
+    )
+
+    if result:
+        logger.info(f"[USER {user_id}] Pengeluaran berhasil ditambahkan")
+    else:
+        logger.error(f"[USER {user_id}] Gagal tambah pengeluaran")
+
+    return RedirectResponse("/dashboard/pengeluaran", status_code=303)

@@ -1,0 +1,127 @@
+<!-- templates/dashboard/bibit.html -->
+{% extends "dashboard/base.html" %}
+{% block title %}Kelola Bibit{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb / Page title -->
+<div class="mb-6 flex items-center gap-2">
+  <i class="fas fa-fish text-indigo-500 text-xl"></i>
+  <div>
+    <h1 class="text-2xl font-semibold text-blue-900 leading-tight">
+      {% block page_title %}Kelola Bibit{% endblock %}
+    </h1>
+    <p class="text-sm text-blue-700 mt-0.5">
+      {% block page_subtitle %}Kelola dan pantau data bibit lele di setiap kolam{% endblock %}
+    </p>
+  </div>
+</div>
+
+<!-- Form Tambah Bibit Baru -->
+<form action="/dashboard/bibit" method="post" class="space-y-4 border bg-white p-4 rounded-lg shadow mb-6">
+  <div class="relative w-full" x-data="{ open: false, selected: null }">
+    <label class="block font-medium mb-1 text-blue-900"><i class="fas fa-water text-blue-500"></i> Pilih Kolam</label>
+    <div class="border rounded w-full p-2 cursor-pointer focus:ring-2 focus:ring-blue-300" @click="open = !open">
+      <span x-text="selected ? selected.nama : 'Pilih kolam...'"></span>
+      <i class="fas fa-chevron-down float-right"></i>
+    </div>
+    <ul x-show="open" @click.outside="open = false"
+        class="absolute left-0 w-full bg-white border rounded mt-1 max-h-48 overflow-auto z-50 shadow">
+      {% for kolam in kolam_list %}
+      <li class="px-3 py-2 hover:bg-blue-50 cursor-pointer"
+          @click="selected = {id: {{ kolam.id }}, nama: '{{ kolam.nama_kolam }}'}; open=false;">
+        {{ kolam.nama_kolam }}
+      </li>
+      {% endfor %}
+    </ul>
+    <input type="hidden" name="kolam_id" :value="selected ? selected.id : ''">
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  
+  <div>
+    <label for="ukuran_bibit" class="block font-medium text-blue-900"><i class="fas fa-ruler-combined text-yellow-500"></i> Ukuran Bibit</label>
+    <input type="text" name="ukuran_bibit" id="ukuran_bibit" class="border p-2 rounded w-full focus:ring-2 focus:ring-blue-300" placeholder="Misal 7-9 cm" required>
+  </div>
+  <div>
+    <label for="jumlah" class="block font-medium text-blue-900"><i class="fas fa-sort-numeric-up text-green-500"></i> Jumlah Bibit</label>
+    <input type="number" name="jumlah" id="jumlah" class="border p-2 rounded w-full focus:ring-2 focus:ring-blue-300" placeholder="Jumlah ekor" required>
+  </div>
+  <div>
+    <label for="total_harga" class="block font-medium text-blue-900"><i class="fas fa-coins text-yellow-500"></i> Total Harga (optional)</label>
+    <input type="number" step="0.01" name="total_harga" id="total_harga" class="border p-2 rounded w-full focus:ring-2 focus:ring-blue-300" placeholder="0">
+  </div>
+  <div>
+    <label for="tanggal_tebar" class="block font-medium text-blue-900"><i class="fas fa-calendar-alt text-indigo-500"></i> Tanggal Tebar (optional)</label>
+    <input type="date" name="tanggal_tebar" id="tanggal_tebar" class="border p-2 rounded w-full focus:ring-2 focus:ring-blue-300">
+  </div>
+  <div>
+    <label for="catatan" class="block font-medium text-blue-900"><i class="fas fa-sticky-note text-gray-500"></i> Catatan (optional)</label>
+    <textarea name="catatan" id="catatan" class="border p-2 rounded w-full focus:ring-2 focus:ring-blue-300" rows="2"></textarea>
+  </div>
+  <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 transition">
+    <i class="fas fa-plus-circle"></i> Tambah Bibit
+  </button>
+</form>
+
+
+<!-- Ringkasan Total Bibit -->
+<hr class="my-6" />
+
+<h2 class="text-xl font-semibold mb-2 flex items-center gap-2 text-blue-900">
+  <i class="fas fa-list text-indigo-500"></i> Daftar Bibit 
+</h2>
+
+
+<!-- Tabel Daftar Bibit -->
+<div class="overflow-x-auto mb-5">
+  <table class="table-auto w-full md:min-w-[900px] border-collapse border bg-white shadow rounded-lg overflow-hidden">
+    <thead class="bg-blue-100 text-blue-700 text-center font-semibold">
+      <tr>
+        <th class="border px-2 py-1 whitespace-nowrap">ID</th>
+        <th class="border px-2 py-1 whitespace-nowrap">Kolam</th>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-calendar-alt"></i> Tanggal Tebar</th>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-ruler-combined"></i> Ukuran</th>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-sort-numeric-up"></i> Jumlah</th>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-coins"></i> Total Harga</th>
+        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-sticky-note"></i> Catatan</th>
+      </tr>
+    </thead>
+    <tbody class="text-center divide-y divide-gray-200">
+      {% for bibit in bibit_list %}
+      <tr class="hover:bg-blue-50 transition">
+        <td class="border px-2 py-1 whitespace-nowrap">{{ bibit.id }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ bibit.nama_kolam }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ bibit.tanggal_tebar or '-' }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ bibit.ukuran_bibit }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ "{:,}".format(bibit.jumlah).replace(',', '.') }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">Rp {{ "{:,.2f}".format(bibit.total_harga).replace(',', '.') }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ bibit.catatan or '-' }}</td>
+      </tr>
+      {% endfor %}
+      <tr class="font-semibold bg-blue-100">
+        <td class="border px-2 py-1 whitespace-nowrap" colspan="1">
+            <i class="fas fa-weight-hanging text-yellow-500"></i> Total
+        </td>
+        <td class="border px-2 py-1 whitespace-nowrap" colspan="1">
+            {{ "{:,}".format(total_bibit).replace(',', '.') }} ekor
+        </td>
+        <td class="border px-2 py-1 whitespace-nowrap" colspan="5"></td>
+      </tr>
+    </tbody>
+  </table>
+  
+</div>
+<script>
+  // Set default tanggal tebar ke hari ini saat halaman load
+  document.addEventListener('DOMContentLoaded', () => {
+    const tebarInput = document.getElementById('tanggal_tebar');
+    if(tebarInput && !tebarInput.value){
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      tebarInput.value = `${yyyy}-${mm}-${dd}`;
+    }
+  });
+</script>
+{% endblock %}
