@@ -14,17 +14,17 @@
 <!-- Grid Statistik Utama dengan Icon -->
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
   {% set stat_cards = [
-    {'icon':'fas fa-fish','icon_color':'text-blue-500','label':'Total Bibit','value':total_bibit ~ ' ekor'},
-    {'icon':'fas fa-bread-slice','icon_color':'text-green-500','label':'Total Pakan','value':total_pakan or 0,'extra':'Rasio: ' ~ rasio_pakan|round(2) ~ ' g/1000 ekor'},
-    {'icon':'fas fa-skull-crossbones','icon_color':'text-red-500','label':'Total Kematian','value':total_kematian ~ ' ekor'},
-    {'icon':'fas fa-water','icon_color':'text-indigo-500','label':'Total Kolam','value':total_kolam,'extra': kolam_aktif ~ ' aktif / ' ~ kolam_nonaktif ~ ' nonaktif'}
+    {'icon':'fas fa-fish','icon_color':'text-blue-500','label':'Total Bibit','value':total_bibit ~ ' ekor', 'id': 'totalBibit'},
+    {'icon':'fas fa-bread-slice','icon_color':'text-green-500','label':'Total Pakan','value':total_pakan or 0, 'id': 'totalPakan', 'extra':'Rasio: ' ~ rasio_pakan|round(2) ~ ' g/1000 ekor'},
+    {'icon':'fas fa-skull-crossbones','icon_color':'text-red-500','label':'Total Kematian','value':total_kematian ~ ' ekor', 'id': 'totalKematian'},
+    {'icon':'fas fa-water','icon_color':'text-indigo-500','label':'Total Kolam','value':total_kolam, 'id': 'totalKolam','extra': kolam_aktif ~ ' aktif / ' ~ kolam_nonaktif ~ ' nonaktif'}
   ] %}
   {% for card in stat_cards %}
   <div class="bg-white p-4 rounded-lg shadow flex items-center gap-3 hover:shadow-lg transition">
     <i class="{{ card.icon }} {{ card.icon_color }} text-3xl"></i>
     <div>
       <div class="text-sm text-blue-700">{{ card.label }}</div>
-      <div class="text-2xl font-bold text-blue-900">{{ card.value }}</div>
+      <div class="text-2xl font-bold text-blue-900" id="{{ card.id }}">{{ card.value }}</div>
       {% if card.extra %}
       <div class="text-xs text-blue-500">{{ card.extra }}</div>
       {% endif %}
@@ -32,6 +32,7 @@
   </div>
   {% endfor %}
 </div>
+
 
 <!-- Detail Kolam (Grid Responsive, Enhanced) -->
 <div class="mb-6">
@@ -425,4 +426,36 @@
     showPage(currentPage);
     
   </script>  
+
+  <script>
+    // Fungsi untuk format angka dengan pemisah ribuan
+    function formatNumber(num) {
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+  
+    // Menunggu halaman selesai dimuat
+    document.addEventListener("DOMContentLoaded", function() {
+      // Format angka pada elemen dengan ID tertentu
+      const totalBibitElem = document.getElementById('totalBibit');
+      if (totalBibitElem) {
+        totalBibitElem.innerText = formatNumber(parseInt(totalBibitElem.innerText));
+      }
+  
+      const totalPakanElem = document.getElementById('totalPakan');
+      if (totalPakanElem) {
+        totalPakanElem.innerText = formatNumber(parseFloat(totalPakanElem.innerText));
+      }
+  
+      const totalKematianElem = document.getElementById('totalKematian');
+      if (totalKematianElem) {
+        totalKematianElem.innerText = formatNumber(parseInt(totalKematianElem.innerText));
+      }
+  
+      const totalKolamElem = document.getElementById('totalKolam');
+      if (totalKolamElem) {
+        totalKolamElem.innerText = formatNumber(parseInt(totalKolamElem.innerText));
+      }
+    });
+  </script>
+  
 {% endblock %}
