@@ -3,7 +3,7 @@
 {% block title %}Stok Pakan{% endblock %}
 
 {% block content %}
-<div class="mb-6 flex items-center gap-2">
+<div class="mb-6 flex items-center gap-2 mt-5">
   <i class="fas fa-boxes text-yellow-500 text-xl"></i>
   <div>
     <h1 class="text-2xl font-semibold text-blue-900 leading-tight">
@@ -26,7 +26,16 @@
 
   <label class="block font-medium text-blue-900"><i class="fas fa-weight-hanging text-yellow-500"></i> Jumlah Stok</label>
   <div class="flex gap-2">
-    <input type="number" name="jumlah" placeholder="Jumlah stok pakan" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" min="0" step="0.01" required />
+    <input
+  type="text"
+  name="jumlah"
+  id="stok_jumlah"
+  inputmode="decimal"
+  placeholder="Jumlah stok pakan"
+  class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300"
+  required
+/>
+
     <select name="satuan" class="border rounded p-2 focus:ring-2 focus:ring-blue-300">
       <option value="g">g</option>
       <option value="kg">kg</option>
@@ -34,7 +43,16 @@
   </div>
 
   <label class="block font-medium text-blue-900"><i class="fas fa-money-bill-wave text-green-500"></i> Harga Total (Rp)</label>
-  <input type="number" name="harga" placeholder="Harga total pakan" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" min="0" step="0.01" required />
+  <input
+  type="text"
+  name="harga"
+  id="stok_harga"
+  inputmode="numeric"
+  placeholder="Harga total pakan"
+  class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300"
+  required
+/>
+
 
   <label class="block font-medium text-blue-900"><i class="fas fa-calendar-alt text-indigo-500"></i> Tanggal Masuk</label>
   <input type="date" name="tanggal_masuk" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" required />
@@ -63,9 +81,12 @@
     </thead>
     <tbody class="text-center divide-y divide-gray-200">
       {% for p in stok_list %}
-      <tr class="hover:bg-blue-50 transition">
+      <tr class="hover:bg-blue-50 transition stok-row">
         <td class="border px-2 py-1 whitespace-nowrap">{{ p["nama_pakan"] }}</td>
-        <td class="border px-2 py-1 whitespace-nowrap">{{ "{:,.2f}".format(p["jumlah"])|replace(',', '.') }} {{ p["satuan"] or "g" }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">
+          {{ "{:,.0f}".format(p["jumlah"])|replace(',', '.') }} {{ p["satuan"] or "g" }}
+      </td>
+      
         <td class="border px-2 py-1 whitespace-nowrap">Rp {{ "{:,.0f}".format(p["harga"])|replace(',', '.') }}</td>
         <td class="border px-2 py-1 whitespace-nowrap">{{ p["tanggal_masuk"] or "-" }}</td>
         <td class="border px-2 py-1 whitespace-nowrap flex justify-center gap-2">
@@ -80,21 +101,21 @@
         </td>
       </tr>
       {% endfor %}
-      <tr class="font-semibold bg-blue-100">
-        <td class="border px-2 py-1 whitespace-nowrap" colspan="1">
-            <i class="fas fa-weight-hanging text-yellow-500"></i> Total
-        </td>
+    </tbody>
+    <tfoot class="bg-blue-100 font-semibold text-center">
+      <tr>
+        <td class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-weight-hanging text-yellow-500"></i> Total</td>
         <td class="border px-2 py-1 whitespace-nowrap">
-            {% if total_jumlah_g >= 1000 %}
-                {{ "{:,.2f}".format(total_jumlah_g / 1000)|replace(',', '.') }} kg
-            {% else %}
-                {{ "{:,.0f}".format(total_jumlah_g)|replace(',', '.') }} g
-            {% endif %}
+          {% if total_jumlah_kg >= 1000 %}
+              {{ "{:,.2f}".format(total_jumlah_kg / 1000)|replace(',', '.') }} kg
+          {% else %}
+              {{ "{:,.0f}".format(total_jumlah_kg)|replace(',', '.') }} g
+          {% endif %}
         </td>
         <td class="border px-2 py-1 whitespace-nowrap">Rp {{ "{:,.0f}".format(total_harga)|replace(',', '.') }}</td>
         <td class="border px-2 py-1 whitespace-nowrap" colspan="2"></td>
       </tr>
-    </tbody>
+    </tfoot>
   </table>
 </div>
 
@@ -248,6 +269,55 @@
 
   // Tampilkan halaman pertama saat pertama kali load
   showPage(currentPage);
+</script>
+<script>
+  function formatRibuan(value) {
+    return value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  function angkaMurni(value) {
+    return value.replace(/\./g, '');
+  }
+
+  function handleInputRibuan(input) {
+    input.addEventListener('input', () => {
+      let value = input.value.replace(/[^0-9]/g, '');
+      input.value = value ? formatRibuan(value) : '';
+    });
+  }
+
+  function handleInputDesimal(input) {
+    input.addEventListener('input', () => {
+      let value = input.value.replace(/[^0-9,]/g, '');
+
+      const parts = value.split(',');
+      if (parts.length > 2) {
+        value = parts[0] + ',' + parts[1];
+      }
+
+      parts[0] = formatRibuan(parts[0]);
+      input.value = parts.join(',');
+    });
+  }
+
+  const formStok = document.querySelector('form[action="/dashboard/pakan_stok/add"]');
+
+  const jumlahStokInput = document.getElementById('stok_jumlah');
+  const hargaStokInput = document.getElementById('stok_harga');
+
+  handleInputDesimal(jumlahStokInput); // bisa 1.000,5 kg
+  handleInputRibuan(hargaStokInput);   // rupiah
+
+  // sebelum submit → bersihkan format
+  formStok.addEventListener('submit', () => {
+    if (jumlahStokInput.value) {
+      jumlahStokInput.value = jumlahStokInput.value
+        .replace(/\./g, '')
+        .replace(',', '.');
+    }
+
+    hargaStokInput.value = angkaMurni(hargaStokInput.value);
+  });
 </script>
 
 {% endblock %}

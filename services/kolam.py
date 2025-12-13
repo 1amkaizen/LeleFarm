@@ -180,13 +180,73 @@ async def delete_kolam(kolam_id: int, user_id: int):
 
 def get_kolam_status(kolam_entry):
     """
-    Tentukan status kolam: 'Sudah Panen' jika kolam punya data panen > 0
-    'Belum Panen' jika belum ada panen
+    Tentukan status kolam sesuai database: 'belum' atau 'sudah'
     """
     try:
         if kolam_entry.get("jumlah_panen", 0) > 0:
-            return "Sudah Panen"
-        return "Belum Panen"
+            return "sudah"
+        return "belum"
     except Exception as e:
         logger.error(f"Gagal hitung status kolam id={kolam_entry.get('id')}: {e}")
-        return "Belum Panen"
+        return "belum"
+
+
+async def update_status_kolam(
+    user_id: int,
+    kolam_id: int,
+    status: str,
+):
+    """
+    Update status panen kolam (belum / sudah) milik user terkait
+    """
+    logger.info(
+        f"[KOLAM] Request update status_panen kolam id={kolam_id} "
+        f"user_id={user_id} status={status}"
+    )
+
+    # Validasi status sesuai constraint database
+    if status not in ("belum", "sudah"):
+        logger.error(f"[KOLAM] Status panen tidak valid: {status}")
+        return None
+
+    # Pastikan kolam milik user
+    kolam = await get_kolam_by_id(kolam_id, user_id)
+    if not kolam:
+        logger.error(
+            f"[KOLAM] Gagal update status_panen: kolam id={kolam_id} "
+            f"user_id={user_id} tidak ditemukan"
+        )
+        return None
+
+    # Kalau status sama, gak perlu update
+    if kolam.get("status_panen") == status:
+        logger.info(
+            f"[KOLAM] Status panen kolam id={kolam_id} sudah '{status}', skip update"
+        )
+        return kolam
+
+    db = get_db()
+
+    def db_call():
+        return (
+            db.table("Kolam")
+            .update({"status_panen": status})
+            .eq("id", kolam_id)
+            .eq("user_id", user_id)
+            .execute()
+        )
+
+    result = await asyncio.to_thread(db_call)
+
+    if not hasattr(result, "data") or not result.data:
+        logger.error(
+            f"[KOLAM] Gagal update status_panen kolam id={kolam_id} "
+            f"user_id={user_id}: {result}"
+        )
+        return None
+
+    logger.info(
+        f"[KOLAM] Status panen kolam id={kolam_id} berhasil diubah "
+        f"ke '{status}' user_id={user_id}"
+    )
+    return result.data[0]

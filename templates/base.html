@@ -1,38 +1,155 @@
 <!-- templates/base.html -->
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>{{ title if title else "LeleFarm" }}</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{{ title if title else "LeleFarm" }}</title>
 
-  <!-- Tailwind CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
 
-  <!-- Custom CSS (opsional) -->
-  <link rel="stylesheet" href="/static/css/style.css">
-</head>
-
-<body class="bg-gray-100 text-gray-800">
-
-  <!-- Header -->
-  <header class="bg-white shadow">
-    <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
-      <h1 class="text-xl font-bold">LeleFarm</h1>
-
-      <nav class="space-x-4">
-        <a href="/" class="text-sm hover:text-blue-600">Home</a>
-        <a href="/login" class="text-sm hover:text-blue-600">Login</a>
-        <a href="/register" class="text-sm hover:text-blue-600">Register</a>
-      </nav>
+  <body class="bg-gradient-to-b from-blue-500 to-blue-700 text-white min-h-screen relative overflow-x-hidden flex flex-col">
+  
+    <!-- Gelombang subtle -->
+    <div class="absolute inset-0 w-full h-full pointer-events-none">
+      <svg
+        class="absolute bottom-0 w-full h-full"
+        viewBox="0 0 1200 120"
+        preserveAspectRatio="none"
+      >
+        <path
+          d="M0,0 C300,80 900,0 1200,60 L1200,120 L0,120 Z"
+          fill="rgba(255,255,255,0.1)"
+        ></path>
+        <path
+          d="M0,0 C600,100 600,0 1200,50 L1200,120 L0,120 Z"
+          fill="rgba(255,255,255,0.05)"
+        ></path>
+      </svg>
     </div>
-  </header>
 
-  <!-- Main -->
-  <main class="max-w-5xl mx-auto px-4 py-8">
-    {% block content %}{% endblock %}
-  </main>
+    <!-- Header -->
+    <header class="bg-transparent relative z-10">
+      <div
+        class="max-w-6xl mx-auto px-6 py-6 flex justify-between items-center"
+      >
+        <!-- Logo dengan ikon ikan putih -->
+        <a href="/" class="flex items-center space-x-3">
+          <i class="fas fa-fish text-white text-2xl"></i>
+          <h1 class="text-2xl font-bold text-white">LeleFarm</h1>
+        </a>
 
-</body>
+        <!-- Hamburger button (mobile) -->
+        <button
+          id="mobile-menu-button"
+          class="sm:hidden text-white focus:outline-none"
+        >
+          <i class="fas fa-bars text-2xl"></i>
+        </button>
+
+        <!-- Navigation (desktop) -->
+        <nav id="nav-links" class="hidden sm:flex space-x-6 items-center">
+          <a
+            href="/"
+            class="text-white/90 hover:text-white/100 font-medium flex items-center gap-2 transition transform hover:scale-105"
+          >
+            <i class="fas fa-home"></i> Home
+          </a>
+          <a
+            href="/login"
+            class="text-white/90 hover:text-white/100 font-medium flex items-center gap-2 transition transform hover:scale-105"
+          >
+            <i class="fas fa-sign-in-alt"></i> Login
+          </a>
+          <a
+            href="/register"
+            class="text-white/90 hover:text-white/100 font-medium flex items-center gap-2 transition transform hover:scale-105"
+          >
+            <i class="fas fa-user-plus"></i> Register
+          </a>
+        </nav>
+      </div>
+
+      <!-- Mobile menu -->
+      <div id="mobile-menu" class="sm:hidden hidden px-6 pb-4 flex flex-col">
+        <a
+          href="/"
+          class="block text-white/90 hover:text-white/100 py-2 font-medium flex items-center gap-2 transition transform hover:scale-105"
+        >
+          <i class="fas fa-home"></i> Home
+        </a>
+        <a
+          href="/login"
+          class="block text-white/90 hover:text-white/100 py-2 font-medium flex items-center gap-2 transition transform hover:scale-105"
+        >
+          <i class="fas fa-sign-in-alt"></i> Login
+        </a>
+        <a
+          href="/register"
+          class="block text-white/90 hover:text-white/100 py-2 font-medium flex items-center gap-2 transition transform hover:scale-105"
+        >
+          <i class="fas fa-user-plus"></i> Register
+        </a>
+      </div>
+    </header>
+
+    <main class="flex-grow">
+      {% block content %}{% endblock %}
+    </main>
+    <!-- Footer -->
+    <footer class="  mt-20 relative z-10">
+      <div class="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-8">
+        <!-- Logo & Deskripsi -->
+        <div>
+          <a href="/" class="flex items-center space-x-3 mb-4">
+            <i class="fas fa-fish text-white text-2xl"></i>
+            <h1 class="text-2xl font-bold text-white">LeleFarm</h1>
+          </a>
+          <p class="text-white/80 text-sm">
+            Sistem manajemen budidaya lele profesional. Pantau pakan, catat kematian, dan prediksi panen secara efisien.
+          </p>
+        </div>
+
+        <!-- Link Cepat -->
+        <div>
+          <h5 class="text-white/90 font-semibold mb-4">Link Cepat</h5>
+          <ul class="space-y-2 text-white/80 text-sm">
+            <li><a href="/" class="hover:text-white/100 transition">Home</a></li>
+            <li><a href="/login" class="hover:text-white/100 transition">Login</a></li>
+            <li><a href="/register" class="hover:text-white/100 transition">Register</a></li>
+          </ul>
+        </div>
+
+        <!-- Kontak & Sosial -->
+        <div>
+          <h5 class="text-white/90 font-semibold mb-4">Kontak & Sosial</h5>
+          <p class="text-white/80 text-sm mb-2">Email: info@lelefarm.com</p>
+          <div class="flex space-x-4 mt-2">
+            <a href="#" class="text-white/80 hover:text-white transition"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="text-white/80 hover:text-white transition"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="text-white/80 hover:text-white transition"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center text-white/50 text-sm py-4 border-t border-white/20">
+        &copy; 2025 LeleFarm. Semua hak cipta dilindungi.
+      </div>
+    </footer>
+    <script>
+      // Toggle mobile menu
+      const btn = document.getElementById("mobile-menu-button");
+      const menu = document.getElementById("mobile-menu");
+
+      btn.addEventListener("click", () => {
+        menu.classList.toggle("hidden");
+      });
+    </script>
+  </body>
 </html>

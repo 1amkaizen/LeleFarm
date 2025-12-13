@@ -23,6 +23,7 @@ async def pakan_stok_page(request: Request):
     user_id = int(user_id)
     stok_list = await pakan_stok.get_all_pakan_stok(user_id=user_id)
 
+    # total_jumlah_g sekarang masih gram
     total_jumlah_g = 0
     total_harga = 0
     for p in stok_list:
@@ -30,6 +31,11 @@ async def pakan_stok_page(request: Request):
         jumlah_g = float(p["jumlah"]) * 1000 if satuan == "kg" else float(p["jumlah"])
         total_jumlah_g += jumlah_g
         total_harga += float(p["harga"])
+
+    # ============================
+    # konversi ke kg bulat
+    total_jumlah_kg = int(total_jumlah_g / 1000)  # buang desimal
+
 
     logger.info(
         f"[USER {user_id}] Render pakan_stok_page: {len(stok_list)} data ditemukan"
@@ -40,7 +46,7 @@ async def pakan_stok_page(request: Request):
         {
             "request": request,
             "stok_list": stok_list,
-            "total_jumlah_g": total_jumlah_g,
+            "total_jumlah_kg": total_jumlah_kg,
             "total_harga": total_harga,
         },
     )

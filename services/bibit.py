@@ -51,6 +51,7 @@ async def create_bibit(
     catatan: str = None,
     tanggal_tebar: str = None,
     user_id: int = None,
+    total_berat: float = 0,  # Tambahkan parameter total_berat
 ):
     """
     Tambah data bibit ke kolam tertentu untuk user tertentu.
@@ -64,6 +65,7 @@ async def create_bibit(
         "jumlah": jumlah,
         "total_harga": total_harga,
         "catatan": catatan,
+        "total_berat": total_berat,  # Sertakan total_berat
     }
 
     if tanggal_tebar:
@@ -80,7 +82,7 @@ async def create_bibit(
             return None
 
         logger.info(
-            f"Bibit ditambahkan user_id={user_id} kolam_id={kolam_id} jumlah={jumlah}"
+            f"Bibit ditambahkan user_id={user_id} kolam_id={kolam_id} jumlah={jumlah} total_berat={total_berat}"
         )
         return result.data[0]
 
@@ -101,6 +103,7 @@ async def edit_bibit(
     catatan: str = None,
     tanggal_tebar: str = None,
     user_id: int = None,
+    total_berat: float = None,  # Tambahkan parameter total_berat
 ):
     """
     Update data bibit berdasarkan bibit_id dan user_id
@@ -120,6 +123,8 @@ async def edit_bibit(
         payload["catatan"] = catatan
     if tanggal_tebar is not None:
         payload["tanggal_tebar"] = tanggal_tebar
+    if total_berat is not None:
+        payload["total_berat"] = total_berat  # Sertakan total_berat
 
     if not payload:
         logger.warning(f"Tidak ada field untuk update bibit_id={bibit_id}")

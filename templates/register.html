@@ -2,18 +2,18 @@
 
 {% block content %}
 
-<div class="max-w-md mx-auto bg-white p-8 shadow rounded mt-10">
-  <h2 class="text-2xl font-bold mb-4 text-center">Daftar Akun</h2>
+<div class="max-w-md mx-auto bg-white/90 backdrop-blur-md p-8 shadow-xl rounded-2xl mt-10">
+  <h2 class="text-2xl font-bold mb-6 text-center text-blue-900 drop-shadow-md">Daftar Akun</h2>
 
-  <form method="post" class="space-y-4" id="registerForm">
+  <form method="post" class="space-y-5" id="registerForm">
 
       <!-- Fullname -->
       <div>
-        <label class="block text-sm font-medium mb-1">Nama Lengkap</label>
+        <label class="block text-sm font-medium mb-1 text-blue-800">Nama Lengkap</label>
         <input 
             name="fullname"
             placeholder="Nama lengkap"
-            class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            class="w-full border border-blue-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition text-blue-900"
             required
         >
         <p id="fullnameError" class="text-red-600 text-sm mt-1 hidden"></p>
@@ -21,13 +21,13 @@
 
       <!-- Email -->
       <div>
-        <label class="block text-sm font-medium mb-1">Email</label>
+        <label class="block text-sm font-medium mb-1 text-blue-800">Email</label>
         <input 
             type="email"
             name="email"
             id="emailField"
             placeholder="email@example.com"
-            class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            class="w-full border border-blue-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition text-blue-900"
             required
         >
         <p id="emailError" class="text-red-600 text-sm mt-1 hidden"></p>
@@ -35,11 +35,11 @@
 
       <!-- Username -->
       <div>
-        <label class="block text-sm font-medium mb-1">Username</label>
+        <label class="block text-sm font-medium mb-1 text-blue-800">Username</label>
         <input 
             name="username"
             placeholder="username"
-            class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            class="w-full border border-blue-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition text-blue-900"
             required
         >
         <p id="usernameError" class="text-red-600 text-sm mt-1 hidden"></p>
@@ -47,13 +47,13 @@
 
       <!-- Password -->
       <div class="relative">
-        <label class="block text-sm font-medium mb-1">Password</label>
+        <label class="block text-sm font-medium mb-1 text-blue-800">Password</label>
         <input 
             type="password"
             name="password"
             id="passwordField"
             placeholder="password"
-            class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            class="w-full border border-blue-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition text-blue-900"
             required
         >
         <span class="absolute right-3 top-9 cursor-pointer text-gray-500" id="togglePassword">
@@ -64,13 +64,13 @@
 
       <!-- Confirm Password -->
       <div class="relative">
-        <label class="block text-sm font-medium mb-1">Konfirmasi Password</label>
+        <label class="block text-sm font-medium mb-1 text-blue-800">Konfirmasi Password</label>
         <input 
             type="password"
             name="confirm_password"
             id="confirmPasswordField"
             placeholder="konfirmasi password"
-            class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            class="w-full border border-blue-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition text-blue-900"
             required
         >
         <span class="absolute right-3 top-9 cursor-pointer text-gray-500" id="toggleConfirmPassword">
@@ -82,17 +82,18 @@
       <!-- Submit -->
       <button 
           type="submit"
-          class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+          class="w-full bg-blue-600 text-white py-2 rounded-lg shadow-lg hover:bg-blue-700 transition transform hover:scale-105"
       >
         Daftar
       </button>
 
   </form>
 
-  <p class="text-center text-sm text-gray-600 mt-4">
+  <p class="text-center text-sm text-gray-700 mt-5">
     Sudah punya akun?
-    <a href="/login" class="text-blue-600 hover:underline">Login di sini</a>
-  </p>
+    <a href="/login" class="text-blue-600 hover:text-blue-700 hover:underline font-medium transition">Login di sini</a>
+</p>
+
 </div>
 
 <script>

@@ -11,6 +11,9 @@
       rel="stylesheet"
     />
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
 
     <style>
       body {
@@ -122,80 +125,114 @@
 
       <!-- Sidebar -->
       <aside
-        id="sidebar"
-        class="sidebar fixed md:static z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 shadow-lg"
-      >
-        <nav class="p-4">
-          <ul class="space-y-1">
-            <li>
-              <a
-                href="/dashboard"
-                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path == '/dashboard' %}bg-blue-700{% endif %}"
-                ><i class="fas fa-chart-bar text-white"></i>
-                <span>Dashboard</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="/dashboard/kolam"
-                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path.startswith('/dashboard/kolam') %}bg-blue-700{% endif %}"
-                ><i class="fas fa-water text-white"></i> <span>Kolam</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="/dashboard/bibit"
-                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path.startswith('/dashboard/bibit') %}bg-blue-700{% endif %}"
-                ><i class="fas fa-fish text-white"></i> <span>Bibit</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="/dashboard/pakan_stok"
-                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path == '/dashboard/pakan_stok' %}bg-blue-700{% endif %}"
-              >
-                <i class="fas fa-boxes text-white"></i>
-                <span>Stok Pakan</span>
-              </a>
-            </li>
-            <li>
-              <a
-                href="/dashboard/pakan"
-                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path == '/dashboard/pakan' %}bg-blue-700{% endif %}"
-              >
-                <i class="fas fa-utensils text-white"></i>
-                <span>Pemberian Pakan</span>
-              </a>
-            </li>
-            
-            
-            <li>
-              <a
-                href="/dashboard/kematian"
-                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path.startswith('/dashboard/kematian') %}bg-blue-700{% endif %}"
-                ><i class="fas fa-skull-crossbones text-white"></i>
-                <span>Kematian</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="/dashboard/pengeluaran"
-                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path.startswith('/dashboard/pengeluaran') %}bg-blue-700{% endif %}"
-                ><i class="fas fa-wallet text-white"></i>
-                <span>Pengeluaran</span></a
-              >
-            </li>
-            <li>
-              <a
-                href="/dashboard/prediksi"
-                class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path.startswith('/dashboard/prediksi') %}bg-blue-700{% endif %}"
-                ><i class="fas fa-robot text-white"></i>
-                <span>Prediksi Panen</span></a
-              >
-            </li>
-          </ul>
-        </nav>
-      </aside>
+      id="sidebar"
+      class="sidebar fixed md:static z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 shadow-lg"
+    >
+      <nav class="p-4">
+        <ul class="space-y-1">
+          <li>
+            <a
+              href="/dashboard"
+              class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path == '/dashboard' %}bg-blue-700{% endif %}"
+              ><i class="fas fa-chart-bar text-white"></i>
+              <span>Dashboard</span></a
+            >
+          </li>
+          <li>
+            <a
+              href="/dashboard/kolam"
+              class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path.startswith('/dashboard/kolam') %}bg-blue-700{% endif %}"
+              ><i class="fas fa-water text-white"></i> <span>Kolam</span></a
+            >
+          </li>
+          <li>
+            <a
+              href="/dashboard/bibit"
+              class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path.startswith('/dashboard/bibit') %}bg-blue-700{% endif %}"
+              ><i class="fas fa-fish text-white"></i> <span>Bibit</span></a
+            >
+          </li>
+    
+          <!-- Dropdown Menu Manajemen Pakan -->
+          <!-- Dropdown Menu Manajemen Pakan -->
+          <li class="relative">
+            <button
+              class="flex items-center gap-3 px-3 py-2 rounded w-full text-white hover:bg-blue-600 focus:outline-none"
+              id="manajemen-pakan-toggle"
+              aria-expanded="false"
+            >
+              <i class="fas fa-boxes text-white"></i>
+              <span>Manajemen Pakan</span>
+              <i class="fas fa-chevron-down ml-auto"></i>
+            </button>
+            <ul
+              id="manajemen-pakan-dropdown"
+              class="absolute left-0 w-full space-y-1 mt-2 hidden bg-blue-700 text-white shadow-lg rounded-md"
+            >
+              <li>
+                <a
+                  href="/dashboard/pakan_stok"
+                  class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-600 {% if request.url.path == '/dashboard/pakan_stok' %}bg-blue-800{% endif %}"
+                  ><i class="fas fa-boxes"></i><span>Stok Pakan</span></a
+                >
+              </li>
+              <li>
+                <a
+                  href="/dashboard/pakan"
+                  class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-600 {% if request.url.path == '/dashboard/pakan' %}bg-blue-800{% endif %}"
+                  ><i class="fas fa-utensils"></i><span>Pemberian Pakan</span></a
+                >
+              </li>
+              <li>
+                <a
+                  href="/dashboard/perhitungan_pakan"
+                  class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-600 {% if request.url.path == '/dashboard/perhitungan_pakan' %}bg-blue-800{% endif %}"
+                  ><i class="fas fa-calculator"></i><span>Perhitungan Pakan</span></a
+                >
+              </li>
+            </ul>
+          </li>
+          
+          
+    
+          <li>
+            <a
+              href="/dashboard/kematian"
+              class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path.startswith('/dashboard/kematian') %}bg-blue-700{% endif %}"
+              ><i class="fas fa-skull-crossbones text-white"></i>
+              <span>Kematian</span></a
+            >
+          </li>
+          <li>
+            <a
+              href="/dashboard/pengeluaran"
+              class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path.startswith('/dashboard/pengeluaran') %}bg-blue-700{% endif %}"
+              ><i class="fas fa-wallet text-white"></i>
+              <span>Pengeluaran</span></a
+            >
+          </li>
+          <li>
+            <a
+              href="/dashboard/ringkasan"
+              class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path == '/dashboard/ringkasan' %}bg-blue-700{% endif %}"
+            >
+              <i class="fas fa-tasks text-white"></i>
+              <span>Ringkasan</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/dashboard/prediksi"
+              class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path.startswith('/dashboard/prediksi') %}bg-blue-700{% endif %}"
+              ><i class="fas fa-robot text-white"></i>
+              <span>Prediksi Panen</span></a
+            >
+          </li>
+        </ul>
+      </nav>
+    </aside>
+    
+
 
       <!-- Konten utama -->
       <main id="mainContent" class="flex-1 min-w-0 px-4 sm:px-6 lg:px-8">
@@ -219,7 +256,18 @@
         overlay.classList.add("hidden");
       });
     </script>
-
+    <script>
+      // Dropdown toggle untuk Manajemen Pakan
+      const toggleButton = document.getElementById('manajemen-pakan-toggle');
+      const dropdownMenu = document.getElementById('manajemen-pakan-dropdown');
+    
+      toggleButton.addEventListener('click', () => {
+        const isExpanded = toggleButton.getAttribute('aria-expanded') === 'true';
+        toggleButton.setAttribute('aria-expanded', !isExpanded);
+        dropdownMenu.classList.toggle('hidden');
+      });
+    </script>
+    
     {% block body_extra %}{% endblock %}
   </body>
 </html>

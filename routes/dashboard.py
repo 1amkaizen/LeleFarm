@@ -55,8 +55,8 @@ async def dashboard(request: Request):
     # ============================
 
     total_kolam = len(kolam_list)
-    kolam_aktif = len([k for k in kolam_list if k.get("status") == "Belum Panen"])
-    kolam_nonaktif = total_kolam - kolam_aktif
+    kolam_belum = len([k for k in kolam_list if k.get("status") == "belum"])
+    kolam_sudah = len([k for k in kolam_list if k.get("status") == "sudah"])
 
     # ============================
     # HITUNG BIBIT & KEMATIAN
@@ -199,17 +199,24 @@ async def dashboard(request: Request):
     # PAKAN TOTAL
     # ============================
 
+    # total pakan dari pakan_list (gram) → konversi ke kg
     total_pakan_gram = sum(p.get("jumlah_gram", 0) for p in pakan_list)
-    total_stok_pakan_gram = sum(s.get("jumlah", 0) for s in pakan_stok_list)
-    total_pakan_semua = total_pakan_gram + total_stok_pakan_gram
+    total_pakan_kg = total_pakan_gram / 1000
 
-    total_pakan = (
-        f"{total_pakan_semua / 1000:.2f} kg"
-        if total_pakan_semua >= 1000
-        else f"{total_pakan_semua:.1f} g"
-    )
+    # total stok pakan (sudah kg di DB)
+    total_stok_pakan_kg = sum(s.get("jumlah", 0) for s in pakan_stok_list)
 
-    rasio_pakan = (total_pakan_semua / total_bibit * 1000) if total_bibit else 0
+    # total semua pakan + stok
+    total_pakan_semua_kg = total_pakan_kg + total_stok_pakan_kg
+
+    # Tampilkan
+    total_pakan = f"{int(total_pakan_semua_kg)} kg"
+
+
+
+    total_bibit = "{:,}".format(total_bibit).replace(",", ".")
+    total_kematian = "{:,}".format(total_kematian).replace(",", ".")
+    total_kolam = "{:,}".format(total_kolam).replace(",", ".")
 
     # ============================
     # RENDER DASHBOARD
@@ -228,9 +235,8 @@ async def dashboard(request: Request):
             "pengeluaran_detail": pengeluaran_detail,
             "total_pakan": total_pakan,
             "total_kolam": total_kolam,
-            "kolam_aktif": kolam_aktif,
-            "kolam_nonaktif": kolam_nonaktif,
-            "rasio_pakan": rasio_pakan,
+            "kolam_belum": kolam_belum,
+            "kolam_sudah": kolam_sudah,
             "bibit_per_kolam": bibit_per_kolam,
             "kematian_list": kematian_list,
         },

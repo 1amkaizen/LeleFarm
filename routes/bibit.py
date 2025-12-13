@@ -30,10 +30,26 @@ async def bibit_page(request: Request):
 
     kolam_dict = {k["id"]: k["nama_kolam"] for k in kolam_list}
 
+    # Menambahkan nama kolam dan total_berat ke dalam data bibit
     for b in bibit_list:
         b["nama_kolam"] = kolam_dict.get(b["kolam_id"], f"ID {b['kolam_id']}")
+        b["total_berat"] = b.get("total_berat", 0)
 
     total_bibit = sum(int(b.get("jumlah", 0)) for b in bibit_list)
+    total_berat = sum(float(b.get("total_berat", 0)) for b in bibit_list)
+
+    # List ukuran bibit untuk mapping di template
+    ukuran_list = [
+        "2-3 cm",
+        "3-4 cm",
+        "3-5 cm",
+        "4-6 cm",
+        "4-7 cm",
+        "5-7 cm",
+        "6-8 cm",
+        "7-9 cm",
+        "9-12 cm",
+    ]
 
     return templates.TemplateResponse(
         "dashboard/bibit.html",
@@ -42,6 +58,8 @@ async def bibit_page(request: Request):
             "kolam_list": kolam_list,
             "bibit_list": bibit_list,
             "total_bibit": total_bibit,
+            "total_berat": total_berat,
+            "ukuran_list": ukuran_list,  # <-- kirim ke template
         },
     )
 
@@ -55,6 +73,7 @@ async def bibit_submit(
     total_harga: float = Form(0),
     catatan: str = Form(None),
     tanggal_tebar: str = Form(None),
+    total_berat: float = Form(0),  # Terima parameter total_berat
 ):
     """Submit data bibit per user."""
     user_id = request.cookies.get("user_id")
@@ -72,6 +91,7 @@ async def bibit_submit(
         catatan=catatan,
         tanggal_tebar=tanggal_tebar,
         user_id=user_id,
+        total_berat=total_berat,  # Sertakan total_berat saat menambahkan bibit
     )
 
     if result:
@@ -98,6 +118,7 @@ async def bibit_edit(request: Request):
     total_harga = float(form.get("total_harga") or 0)
     catatan = form.get("catatan")
     tanggal_tebar = form.get("tanggal_tebar")
+    total_berat = float(form.get("total_berat") or 0)  # Ambil total_berat
 
     updated = await edit_bibit(
         bibit_id=bibit_id,
@@ -108,6 +129,7 @@ async def bibit_edit(request: Request):
         catatan=catatan,
         tanggal_tebar=tanggal_tebar,
         user_id=user_id,
+        total_berat=total_berat,  # Sertakan total_berat saat mengedit bibit
     )
 
     if updated:

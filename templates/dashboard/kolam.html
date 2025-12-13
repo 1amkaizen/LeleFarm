@@ -3,7 +3,7 @@
 {% block title %}Kelola Kolam{% endblock %}
 
 {% block content %}
-<div class="mb-6 flex items-center gap-2">
+<div class="mb-6 flex items-center gap-2 mt-5">
   <i class="fas fa-water text-blue-500 text-xl"></i>
   <div>
     <h1 class="text-2xl font-semibold text-blue-900 leading-tight">
@@ -22,7 +22,15 @@
   </div>
   <div>
     <label for="kapasitas_bibit" class="block font-medium text-blue-900"><i class="fas fa-fish text-indigo-500"></i> Kapasitas Bibit</label>
-    <input type="number" id="kapasitas_bibit" name="kapasitas_bibit" placeholder="Jumlah bibit" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none" />
+    <input
+    type="text"
+    id="kapasitas_bibit"
+    name="kapasitas_bibit"
+    placeholder="Jumlah bibit"
+    inputmode="numeric"
+    class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
+  />
+  
   </div>
   <div>
     <label for="tanggal_mulai" class="block font-medium text-blue-900"><i class="fas fa-calendar-alt text-yellow-500"></i> Tanggal Mulai</label>
@@ -59,21 +67,48 @@
         <td class="border px-2 py-1 whitespace-nowrap">{{ "{:,}".format(kolam.kapasitas_bibit).replace(',', '.') }}</td>
         <td class="border px-2 py-1 whitespace-nowrap">{{ kolam.tanggal_mulai }}</td>
         <td class="border px-2 py-1 whitespace-nowrap">{{ kolam.catatan|default('Tidak ada catatan') }}</td>
-        <td class="border px-2 py-1 whitespace-nowrap">
-          {% if kolam.status == 'Aktif' %}
-            <span class="text-green-600 font-semibold"><i class="fas fa-check-circle"></i> {{ kolam.status }}</span>
-          {% else %}
-            <span class="text-red-600 font-semibold"><i class="fas fa-times-circle"></i> {{ kolam.status }}</span>
-          {% endif %}
+        <td class="border px-2 py-1 whitespace-nowrap text-center">
+          <form method="post" action="/dashboard/kolam/status" class="flex items-center justify-center gap-2">
+            <input type="hidden" name="kolam_id" value="{{ kolam.id }}"/>
+        
+            <select
+              name="status"
+              onchange="this.form.submit()"
+              class="border rounded px-2 py-1 text-sm
+                     {% if kolam.status_panen == 'sudah' %}
+                       bg-green-100 text-green-700
+                     {% else %}
+                       bg-red-100 text-red-700
+                     {% endif %}"
+            >
+              <option value="belum" {% if kolam.status_panen == 'belum' %}selected{% endif %}>
+                Belum Panen
+              </option>
+              <option value="sudah" {% if kolam.status_panen == 'sudah' %}selected{% endif %}>
+                Sudah Panen
+              </option>
+            </select>
+          </form>
         </td>
+        
+        
         <td class="border px-2 py-1">
           <div class="flex flex-wrap justify-center gap-1">
             <button
-              class="bg-yellow-400 hover:bg-yellow-500 text-white text-sm md:text-base px-2 py-1 md:px-3 md:py-1.5 rounded flex items-center gap-1 transition"
-              onclick="openEditModal({{ kolam.id }}, '{{ kolam.nama_kolam }}', {{ kolam.kapasitas_bibit }}, '{{ kolam.tanggal_mulai }}', '{{ kolam.catatan|default('') }}')"
-            >
-              <i class="fas fa-edit"></i>
-            </button>
+            {% if kolam.status_panen == 'sudah' %}disabled{% endif %}
+            class="bg-yellow-400 hover:bg-yellow-500 text-white text-sm md:text-base px-2 py-1 md:px-3 md:py-1.5 rounded flex items-center gap-1 transition
+                   {% if kolam.status_panen == 'sudah' %}opacity-50 cursor-not-allowed{% endif %}"
+            onclick="openEditModal(
+              {{ kolam.id }},
+              '{{ kolam.nama_kolam }}',
+              {{ kolam.kapasitas_bibit }},
+              '{{ kolam.tanggal_mulai }}',
+              '{{ kolam.catatan|default('') }}'
+            )"
+          >
+            <i class="fas fa-edit"></i>
+          </button>
+          
             <button
               type="button"
               class="bg-red-500 hover:bg-red-600 text-white text-sm md:text-base px-2 py-1 md:px-3 md:py-1.5 rounded flex items-center gap-1 transition"
@@ -237,5 +272,26 @@
   showPage(currentPage);
 </script>
 
+<script>
+  const kapasitasInput = document.getElementById('kapasitas_bibit');
+
+  kapasitasInput.addEventListener('input', function () {
+    // Ambil angka saja
+    let value = this.value.replace(/\D/g, '');
+
+    if (!value) {
+      this.value = '';
+      return;
+    }
+
+    // Format ke ribuan Indonesia (1.000)
+    this.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  });
+
+  // Sebelum submit, kirim angka murni ke backend
+  kapasitasInput.form.addEventListener('submit', function () {
+    kapasitasInput.value = kapasitasInput.value.replace(/\./g, '');
+  });
+</script>
 
 {% endblock %}

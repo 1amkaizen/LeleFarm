@@ -100,7 +100,7 @@ async def pakan_edit(request: Request):
     # Validasi pakan_stok_id
     pakan_stok_id_str = form.get("pakan_stok_id")
     if pakan_stok_id_str is None or pakan_stok_id_str == "":
-        logger.error(f"[USER {user_id}] Pakan Stok ID tidak ditemukan atau kosong")
+        logger.error(f"[USER {user_id}] PemberianPakan Stok ID tidak ditemukan atau kosong")
         return RedirectResponse("/dashboard/pakan", status_code=303)
 
     pakan_stok_id = int(pakan_stok_id_str)  # Sekarang aman untuk di-convert
@@ -128,7 +128,7 @@ async def pakan_edit(request: Request):
 
     if updated:
         logger.info(
-            f"[USER {user_id}] Pakan {pakan_id} diedit: pakan='{jenis_pakan}', jumlah={jumlah_gram}g"
+            f"[USER {user_id}] PemberianPakan {pakan_id} diedit: pakan='{jenis_pakan}', jumlah={jumlah_gram}g"
         )
     else:
         logger.error(f"[USER {user_id}] Gagal edit pakan {pakan_id}")
@@ -167,7 +167,7 @@ async def pakan_delete(request: Request):
     success = await pakan.delete_pakan(pakan_id, user_id)
 
     if success:
-        logger.info(f"[USER {user_id}] Pakan {pakan_id} dihapus")
+        logger.info(f"[USER {user_id}] PemberianPakan {pakan_id} dihapus")
     else:
         logger.error(f"[USER {user_id}] Gagal hapus pakan {pakan_id}")
 

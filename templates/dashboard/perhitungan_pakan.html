@@ -1,0 +1,73 @@
+<!-- templates/dashboard/perhitungan_pakan.html -->
+{% extends "dashboard/base.html" %}
+{% block title %}Perhitungan Pakan{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb / Page title -->
+<div class="mb-6 flex items-center gap-2 mt-5">
+  <i class="fas fa-drumstick-bite text-indigo-500 text-2xl"></i>
+  <div>
+    <h1 class="text-3xl font-bold text-blue-900 leading-tight">
+      Perhitungan Pakan
+    </h1>
+    <p class="text-sm text-blue-700 mt-1">
+      Pantau kebutuhan pakan harian secara otomatis berdasarkan biomassa aktual
+    </p>
+  </div>
+</div>
+
+<!-- Ringkasan Global -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+  {% set global_cards = [
+      {'title':'Total Ikan Hidup','icon':'fas fa-fish','value':total_ikan,'unit':'ekor','color':'green-600'},
+      {'title':'Total Biomassa','icon':'fas fa-weight-hanging','value':total_berat_bibit,'unit':'kg','color':'green-600'},
+      {'title':'Total Stok Pakan','icon':'fas fa-boxes','value':total_stok_pakan,'unit':'g','color':'green-600'}
+  ] %}
+  {% for card in global_cards %}
+  <div class="bg-white shadow-lg rounded-xl p-4 hover:shadow-xl transition">
+    <h3 class="text-lg font-semibold text-blue-900 mb-2">
+      <i class="{{ card.icon }}"></i> {{ card.title }}
+    </h3>
+    <p class="text-3xl font-bold text-{{ card.color }}">
+      {{ "{:,.0f}".format(card.value or 0) | replace(",", ".") }} {{ card.unit }}
+    </p>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Ringkasan Perhitungan Pakan -->
+<section class="bg-white shadow-xl rounded-2xl p-6 mb-6">
+  <h2 class="text-2xl font-bold text-blue-900 mb-4 flex items-center gap-2">
+    <i class="fas fa-chart-pie text-blue-700"></i> Estimasi Pakan Harian
+  </h2>
+
+  {% set persen_pakan_harian = 3 %}
+  {% set estimasi_pakan_harian_kg = total_berat_bibit * (persen_pakan_harian / 100) %}
+  {% set estimasi_pakan_harian_gram = estimasi_pakan_harian_kg * 1000 %}
+
+  <div class="bg-blue-50 rounded-xl p-5 shadow hover:shadow-md transition max-w-xl">
+    <ul class="text-gray-700 list-disc list-inside mb-3">
+      <li>
+        Total Biomassa:
+        <span class="font-semibold">
+          {{ "{:,.2f}".format(total_berat_bibit) | replace(",", ".") }} kg
+        </span>
+      </li>
+      <li>
+        Persentase Pakan Harian:
+        <span class="font-semibold">{{ persen_pakan_harian }}%</span>
+      </li>
+    </ul>
+
+    <p class="text-xl font-bold text-blue-900 mb-1">
+      Kebutuhan Pakan Hari Ini:
+      {{ "{:,.2f}".format(estimasi_pakan_harian_kg) | replace(",", ".") }} kg
+      ({{ "{:,.0f}".format(estimasi_pakan_harian_gram) | replace(",", ".") }} g)
+    </p>
+
+    <p class="text-sm text-gray-500 italic mt-2">
+      Rumus: Pakan Harian = Biomassa Aktual × Persentase Pakan Harian
+    </p>
+  </div>
+</section>
+{% endblock %}

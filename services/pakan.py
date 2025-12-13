@@ -14,7 +14,7 @@ async def get_all_pakan(user_id: int, kolam_id: int = None):
     Jika kolam_id diberikan, ambil hanya untuk kolam tersebut.
     """
     db = get_db()
-    query = db.table("Pakan").select("*").eq("user_id", user_id)
+    query = db.table("PemberianPakan").select("*").eq("user_id", user_id)
 
     if kolam_id:
         query = query.eq("kolam_id", kolam_id)
@@ -51,14 +51,14 @@ async def add_pakan(
     }
 
     result = await asyncio.to_thread(
-        lambda: db.table("Pakan").insert(payload).execute()
+        lambda: db.table("PemberianPakan").insert(payload).execute()
     )
 
     if not hasattr(result, "data") or result.data is None:
         logger.error(f"[PAKAN] Gagal tambah pakan user_id={user_id}: {result}")
         return None
 
-    logger.info(f"[PAKAN] Pakan ditambahkan user_id={user_id}: {result.data}")
+    logger.info(f"[PAKAN] PemberianPakan ditambahkan user_id={user_id}: {result.data}")
     return result.data
 
 
@@ -85,7 +85,7 @@ async def edit_pakan(
     }
 
     result = await asyncio.to_thread(
-        lambda: db.table("Pakan")
+        lambda: db.table("PemberianPakan")
         .update(payload)
         .eq("id", pakan_id)
         .eq("user_id", user_id)
@@ -98,7 +98,7 @@ async def edit_pakan(
         )
         return None
 
-    logger.info(f"[PAKAN] Pakan {pakan_id} berhasil diedit user_id={user_id}")
+    logger.info(f"[PAKAN] PemberianPakan {pakan_id} berhasil diedit user_id={user_id}")
     return result.data
 
 
@@ -109,7 +109,7 @@ async def delete_pakan(pakan_id: int, user_id: int):
     db = get_db()
 
     result = await asyncio.to_thread(
-        lambda: db.table("Pakan")
+        lambda: db.table("PemberianPakan")
         .delete()
         .eq("id", pakan_id)
         .eq("user_id", user_id)  # Menggunakan user_id dari cookies yang sudah ada
@@ -122,5 +122,5 @@ async def delete_pakan(pakan_id: int, user_id: int):
         )
         return False
 
-    logger.info(f"[PAKAN] Pakan {pakan_id} berhasil dihapus user_id={user_id}")
+    logger.info(f"[PAKAN] PemberianPakan {pakan_id} berhasil dihapus user_id={user_id}")
     return True

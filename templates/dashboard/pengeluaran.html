@@ -3,7 +3,7 @@
 {% block title %}Pengeluaran{% endblock %}
 
 {% block content %}
-<div class="mb-6 flex items-center gap-2">
+<div class="mb-6 flex items-center gap-2 mt-5">
   <i class="fas fa-money-bill-wave text-green-500 text-xl"></i>
   <div>
     <h1 class="text-2xl font-semibold text-green-700 leading-tight">
@@ -26,11 +26,29 @@
   </div>
   <div>
     <label class="block font-medium text-blue-900"><i class="fas fa-sort-numeric-up text-indigo-500"></i> Jumlah</label>
-    <input type="number" name="jumlah" placeholder="Jumlah" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" value="1" min="1" step="1" required />
+    <input
+    type="text"
+    name="jumlah"
+    id="pengeluaran_jumlah"
+    inputmode="numeric"
+    value="1"
+    class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300"
+    required
+  />
+  
   </div>
   <div>
     <label class="block font-medium text-blue-900"><i class="fas fa-coins text-yellow-500"></i> Harga per Unit (Rp)</label>
-    <input type="number" name="harga" placeholder="Harga per Unit (Rp)" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" required />
+    <input
+  type="text"
+  name="harga"
+  id="pengeluaran_harga"
+  inputmode="numeric"
+  placeholder="Harga per Unit (Rp)"
+  class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300"
+  required
+/>
+
   </div>
   <div>
     <label class="block font-medium text-blue-900"><i class="fas fa-calendar-alt text-indigo-500"></i> Tanggal</label>
@@ -235,4 +253,39 @@ function changePage(direction) {
 showPage(currentPage);
 
 </script>
+<script>
+  function formatRibuan(v) {
+    return v.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  function angkaMurni(v) {
+    return v.replace(/\./g, '');
+  }
+
+  const formPengeluaran = document.querySelector(
+    'form[action="/dashboard/pengeluaran"]'
+  );
+
+  const jumlahInput = document.getElementById('pengeluaran_jumlah');
+  const hargaInput = document.getElementById('pengeluaran_harga');
+
+  // jumlah (integer)
+  jumlahInput.addEventListener('input', () => {
+    let v = jumlahInput.value.replace(/\D/g, '');
+    jumlahInput.value = v ? formatRibuan(v) : '';
+  });
+
+  // harga (rupiah)
+  hargaInput.addEventListener('input', () => {
+    let v = hargaInput.value.replace(/\D/g, '');
+    hargaInput.value = v ? formatRibuan(v) : '';
+  });
+
+  // sebelum submit → kirim angka murni
+  formPengeluaran.addEventListener('submit', () => {
+    jumlahInput.value = angkaMurni(jumlahInput.value);
+    hargaInput.value = angkaMurni(hargaInput.value);
+  });
+</script>
+
 {% endblock %}
