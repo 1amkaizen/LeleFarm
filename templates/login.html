@@ -1,50 +1,66 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Container utama -->
+<div class="flex flex-col lg:flex-row items-center justify-center min-h-screen">
 
-<div class="max-w-md mx-auto bg-white/90 backdrop-blur-md p-8 shadow-xl rounded-2xl mt-10">
-  <h2 class="text-2xl font-bold mb-6 text-center text-blue-900 drop-shadow-md">Login</h2>
+  <!-- Kolom kiri: gambar besar -->
+  <div class="w-full lg:w-6/12 flex justify-center items-center p-6">
+    <img
+      src="/static/img/login.png"
+      alt="Login Image"
+      class="w-full h-auto max-w-sm lg:max-w-md xl:max-w-lg object-cover"
+    />
+  </div>
+  
 
-  <form method="post" class="space-y-5">
-
+  <!-- Kolom kanan: form login -->
+  <div class="w-full lg:w-5/12 max-w-md mx-auto bg-white/90 backdrop-blur-md p-10 shadow-2xl rounded-3xl mt-10 lg:mt-0 lg:ml-10 border-2 border-blue-200">
+    <h2 class="text-3xl font-extrabold mb-8 text-center text-blue-900 drop-shadow-lg bg-gradient-to-r from-blue-400 via-blue-600 to-blue-500 bg-clip-text text-transparent">
+      Login
+    </h2>
+  
+    <form method="post" class="space-y-6">
+  
       <!-- Username / Email -->
       <div>
-        <label class="block text-sm font-medium mb-1 text-blue-800">Email atau Username</label>
+        <label class="block text-sm font-semibold mb-1 text-blue-800">Email atau Username</label>
         <input 
             name="username"
             placeholder="email atau username"
-            class="w-full border border-blue-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition text-blue-900"
+            class="w-full border-2 border-blue-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition text-blue-900 shadow-sm hover:shadow-md"
             required
         >
       </div>
-
+  
       <!-- Password -->
       <div>
-        <label class="block text-sm font-medium mb-1 text-blue-800">Password</label>
+        <label class="block text-sm font-semibold mb-1 text-blue-800">Password</label>
         <input 
             type="password"
             name="password"
             placeholder="password"
-            class="w-full border border-blue-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition text-blue-900"
+            class="w-full border-2 border-blue-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition text-blue-900 shadow-sm hover:shadow-md"
             required
         >
       </div>
-
+  
       <!-- Submit -->
       <button 
           type="submit"
-          class="w-full bg-blue-600 text-white py-2 rounded-lg shadow-lg hover:bg-blue-700 transition transform hover:scale-105"
+          class="w-full bg-blue-600 text-white py-3 rounded-xl shadow-lg hover:bg-blue-700 hover:shadow-xl transition transform hover:scale-105 ring-1 ring-blue-300 hover:ring-blue-400"
       >
         Masuk
       </button>
-
-  </form>
-
-  <p class="text-center text-sm text-gray-700 mt-5">
-    Belum punya akun?
-    <a href="/register" class="text-blue-600 hover:text-blue-700 hover:underline font-medium transition">Daftar sekarang</a>
-  </p>
+  
+    </form>
+  
+    <p class="text-center text-sm text-gray-700 mt-6">
+      Belum punya akun?
+      <a href="/register" class="text-blue-600 hover:text-blue-700 hover:underline font-medium transition">Daftar sekarang</a>
+    </p>
+  </div>
+  
 
 </div>
-
 {% endblock %}

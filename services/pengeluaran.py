@@ -29,8 +29,10 @@ async def get_all_pengeluaran(user_id: int):
     # gabung nama kolam ke dict pengeluaran
     pengeluaran_list = []
     for p in result.data:
-        p["nama_kolam"] = p.get("Kolam", {}).get("nama_kolam", "-")
+        kolam = p.get("Kolam") or {}  # jika None, pakai dict kosong
+        p["nama_kolam"] = kolam.get("nama_kolam", "-")
         pengeluaran_list.append(p)
+
     return pengeluaran_list
 
 

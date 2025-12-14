@@ -1,99 +1,114 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Container utama -->
+<div class="flex flex-col lg:flex-row items-center justify-center min-h-screen">
 
-<div class="max-w-md mx-auto bg-white/90 backdrop-blur-md p-8 shadow-xl rounded-2xl mt-10">
-  <h2 class="text-2xl font-bold mb-6 text-center text-blue-900 drop-shadow-md">Daftar Akun</h2>
+  <!-- Kolom kiri: gambar besar -->
+  <div class="w-full lg:w-6/12 flex justify-center items-center p-6">
+    <img
+      src="/static/img/login.webp"
+      alt="Register Image"
+      class="w-full h-auto max-w-xl lg:max-w-full object-cover"
+    />
+  </div>
 
-  <form method="post" class="space-y-5" id="registerForm">
-
+  <!-- Kolom kanan: form register -->
+  <div class="w-full lg:w-5/12 max-w-md mx-auto bg-white/90 backdrop-blur-md p-10 shadow-2xl rounded-3xl mt-10 lg:mt-0 lg:ml-10 border-2 border-blue-200">
+    <h2 class="text-3xl font-extrabold mb-8 text-center text-blue-900 drop-shadow-lg bg-gradient-to-r from-blue-400 via-blue-600 to-blue-500 bg-clip-text text-transparent">
+      Daftar Akun
+    </h2>
+  
+    <form method="post" class="space-y-6" id="registerForm">
+  
       <!-- Fullname -->
       <div>
-        <label class="block text-sm font-medium mb-1 text-blue-800">Nama Lengkap</label>
+        <label class="block text-sm font-semibold mb-1 text-blue-800">Nama Lengkap</label>
         <input 
             name="fullname"
             placeholder="Nama lengkap"
-            class="w-full border border-blue-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition text-blue-900"
+            class="w-full border-2 border-blue-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition text-blue-900 shadow-sm hover:shadow-md"
             required
         >
         <p id="fullnameError" class="text-red-600 text-sm mt-1 hidden"></p>
       </div>
-
+  
       <!-- Email -->
       <div>
-        <label class="block text-sm font-medium mb-1 text-blue-800">Email</label>
+        <label class="block text-sm font-semibold mb-1 text-blue-800">Email</label>
         <input 
             type="email"
             name="email"
             id="emailField"
             placeholder="email@example.com"
-            class="w-full border border-blue-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition text-blue-900"
+            class="w-full border-2 border-blue-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition text-blue-900 shadow-sm hover:shadow-md"
             required
         >
         <p id="emailError" class="text-red-600 text-sm mt-1 hidden"></p>
       </div>
-
+  
       <!-- Username -->
       <div>
-        <label class="block text-sm font-medium mb-1 text-blue-800">Username</label>
+        <label class="block text-sm font-semibold mb-1 text-blue-800">Username</label>
         <input 
             name="username"
             placeholder="username"
-            class="w-full border border-blue-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition text-blue-900"
+            class="w-full border-2 border-blue-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition text-blue-900 shadow-sm hover:shadow-md"
             required
         >
         <p id="usernameError" class="text-red-600 text-sm mt-1 hidden"></p>
       </div>
-
+  
       <!-- Password -->
       <div class="relative">
-        <label class="block text-sm font-medium mb-1 text-blue-800">Password</label>
+        <label class="block text-sm font-semibold mb-1 text-blue-800">Password</label>
         <input 
             type="password"
             name="password"
             id="passwordField"
             placeholder="password"
-            class="w-full border border-blue-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition text-blue-900"
+            class="w-full border-2 border-blue-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition text-blue-900 shadow-sm hover:shadow-md"
             required
         >
-        <span class="absolute right-3 top-9 cursor-pointer text-gray-500" id="togglePassword">
+        <span class="absolute right-3 top-11 cursor-pointer text-gray-500" id="togglePassword">
           <i class="fas fa-eye"></i>
         </span>
         <p id="passwordError" class="text-red-600 text-sm mt-1 hidden"></p>
       </div>
-
+  
       <!-- Confirm Password -->
       <div class="relative">
-        <label class="block text-sm font-medium mb-1 text-blue-800">Konfirmasi Password</label>
+        <label class="block text-sm font-semibold mb-1 text-blue-800">Konfirmasi Password</label>
         <input 
             type="password"
             name="confirm_password"
             id="confirmPasswordField"
             placeholder="konfirmasi password"
-            class="w-full border border-blue-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition text-blue-900"
+            class="w-full border-2 border-blue-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition text-blue-900 shadow-sm hover:shadow-md"
             required
         >
-        <span class="absolute right-3 top-9 cursor-pointer text-gray-500" id="toggleConfirmPassword">
+        <span class="absolute right-3 top-11 cursor-pointer text-gray-500" id="toggleConfirmPassword">
           <i class="fas fa-eye"></i>
         </span>
         <p id="confirmError" class="text-red-600 text-sm mt-1 hidden">Password tidak cocok</p>
       </div>
-
+  
       <!-- Submit -->
       <button 
           type="submit"
-          class="w-full bg-blue-600 text-white py-2 rounded-lg shadow-lg hover:bg-blue-700 transition transform hover:scale-105"
+          class="w-full bg-blue-600 text-white py-3 rounded-xl shadow-lg hover:bg-blue-700 hover:shadow-xl transition transform hover:scale-105 ring-1 ring-blue-300 hover:ring-blue-400"
       >
         Daftar
       </button>
-
-  </form>
-
-  <p class="text-center text-sm text-gray-700 mt-5">
-    Sudah punya akun?
-    <a href="/login" class="text-blue-600 hover:text-blue-700 hover:underline font-medium transition">Login di sini</a>
-</p>
-
+  
+    </form>
+  
+    <p class="text-center text-sm text-gray-700 mt-6">
+      Sudah punya akun?
+      <a href="/login" class="text-blue-600 hover:text-blue-700 hover:underline font-medium transition">Login di sini</a>
+    </p>
+  </div>
+  
 </div>
 
 <script>
@@ -151,7 +166,6 @@ toggleConfirmPassword.addEventListener("click", () => {
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Reset semua error
     [emailError, confirmError, fullnameError, usernameError, passwordError].forEach(el => el.classList.add("hidden"));
 
     const formData = new FormData(form);
@@ -165,7 +179,6 @@ form.addEventListener("submit", async (e) => {
 
         if (!res.ok) {
             const error = await res.json();
-            // Tampilkan error sesuai field
             const msg = error.detail.toLowerCase();
             if (msg.includes("email")) emailError.textContent = error.detail, emailError.classList.remove("hidden");
             else if (msg.includes("username")) usernameError.textContent = error.detail, usernameError.classList.remove("hidden");
@@ -175,7 +188,6 @@ form.addEventListener("submit", async (e) => {
             return;
         }
 
-        // Sukses
         window.location.href = "/login";
     } catch (err) {
         console.error(err);
