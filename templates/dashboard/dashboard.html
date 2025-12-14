@@ -46,6 +46,7 @@
       <thead class="bg-blue-100 text-blue-700 font-semibold">
         <tr>
           <th class="border px-3 py-2"><i class="fas fa-water"></i> Nama Kolam</th>
+          <th class="border px-3 py-2"><i class="fas fa-calendar-alt"></i> Tanggal Tebar</th>
           <th class="border px-3 py-2"><i class="fas fa-clock"></i> Umur</th>
           <th class="border px-3 py-2"><i class="fas fa-ruler"></i> Ukuran Bibit</th>
           <th class="border px-3 py-2"><i class="fas fa-sort-numeric-up"></i> Jumlah Bibit</th>
@@ -58,17 +59,20 @@
         {% for b in bibit_entries %}
         <tr class="hover:bg-blue-50 transition">
           <td class="border px-2 py-1 text-left whitespace-nowrap">{{ b.nama_kolam }}</td>
+          <td class="border px-2 py-1 whitespace-nowrap">{{ b.tanggal_tebar | default('-') }}</td> <!-- baru -->
           <td class="border px-2 py-1 whitespace-nowrap">{{ b.umur_hari ~ ' hari' if b.umur_hari is not none else '-' }}</td>
           <td class="border px-2 py-1 whitespace-nowrap">{{ b.ukuran_bibit ~ ' cm' if b.ukuran_bibit else '-' }}</td>
           <td class="border px-2 py-1 whitespace-nowrap">{{ "{:,}".format(b.jumlah).replace(',', '.') }}</td>
           <td class="border px-2 py-1 whitespace-nowrap">Rp {{ "{:,}".format(b.harga|int).replace(',', '.') }}</td>
           <td class="border px-2 py-1 whitespace-nowrap">
-            {% if b.status == 'Sudah Panen' %}
-              <span class="text-green-600 font-semibold"><i class="fas fa-check-circle"></i> {{ b.status }}</span>
-            {% else %}
-              <span class="text-red-600 font-semibold"><i class="fas fa-hourglass-half"></i> {{ b.status }}</span>
-            {% endif %}
+            {% if b.status == 'sudah' %}
+            <span class="text-green-600 font-semibold"><i class="fas fa-check-circle"></i> Sudah Panen</span>
+        {% else %}
+            <span class="text-red-600 font-semibold"><i class="fas fa-hourglass-half"></i> Belum Panen</span>
+        {% endif %}
+        
           </td>
+          
         </tr>
         {% endfor %}
       </tbody>
@@ -106,25 +110,6 @@
       <i class="fas fa-wallet text-yellow-500"></i> Ringkasan Keuangan
     </h3>
   
-    <ul class="text-sm mb-2" id="pengeluaranList">
-      {% for item in pengeluaran_detail %}
-      <li class="pengeluaranRow flex justify-between border-b py-1">
-        <span>{{ item.nama }} ({{ item.jumlah }})</span>
-        <span>Rp {{ "{:,}".format(item.total|int).replace(',', '.') }}</span>
-      </li>
-      {% endfor %}
-    </ul>
-  
-    <!-- Pagination Controls for Pengeluaran -->
-    <div id="paginationControls" class="flex justify-center mt-4 space-x-2 mb-5">
-      <button id="prevBtn" class="px-4 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-300" onclick="changePage('prev')" disabled>
-        <i class="fas fa-arrow-left text-sm"></i>
-      </button>
-      <span id="pageInfo" class="mx-2 text-sm text-gray-800 font-semibold">Page 1</span>
-      <button id="nextBtn" class="px-4 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-300" onclick="changePage('next')" disabled>
-        <i class="fas fa-arrow-right text-sm"></i>
-      </button>
-    </div>
     
   
     <div class="border-t pt-2 mt-2 flex justify-between font-semibold text-blue-900">
@@ -173,11 +158,12 @@
   
   // ----- Grafik Pertumbuhan Bibit -----
   const ctxPertumbuhan = document.getElementById('chartPertumbuhan').getContext('2d');
-  const labelsPertumbuhan = [
-    {% for b in bibit_entries %}
-      '{{ b.nama_kolam }}',
-    {% endfor %}
-  ];
+const labelsPertumbuhan = [
+  {% for b in bibit_entries %}
+    '{{ b.tanggal_tebar }} - {{ b.nama_kolam }}',
+  {% endfor %}
+];
+
   const dataPertumbuhan = [
     {% for b in bibit_entries %}
       {{ b.jumlah }},
@@ -357,6 +343,8 @@
     }
   });
   </script>
+
+  
   <script>
     // Pagination for Kolam
     const rowsPerPageKolam = 5;

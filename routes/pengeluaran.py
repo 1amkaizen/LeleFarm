@@ -12,6 +12,7 @@ from services.pengeluaran import (
     update_pengeluaran,
     delete_pengeluaran,
 )
+from services.kolam import get_all_kolam  # ambil list kolam user
 
 router = APIRouter()
 logger = logging.getLogger("router_pengeluaran")
@@ -30,6 +31,7 @@ async def pengeluaran_page(request: Request):
 
     user_id = int(user_id)
     pengeluaran_list = [dict(p) for p in await get_all_pengeluaran(user_id)]
+    kolam_list = await get_all_kolam(user_id)
 
     for p in pengeluaran_list:
         p["harga"] = float(p.get("harga", 0))
@@ -48,6 +50,7 @@ async def pengeluaran_page(request: Request):
             "request": request,
             "pengeluaran_list": pengeluaran_list,
             "grand_total": grand_total,
+            "kolam_list": kolam_list,  # untuk dropdown kolam
         },
     )
 
@@ -63,6 +66,7 @@ async def pengeluaran_submit(
     jumlah: int = Form(1),
     tanggal: str = Form(...),
     catatan: str = Form(None),
+    kolam_id: int = Form(None),  # baru
 ):
     user_id = request.cookies.get("user_id")
     if not user_id:
@@ -71,7 +75,7 @@ async def pengeluaran_submit(
 
     user_id = int(user_id)
     logger.info(
-        f"[USER {user_id}] Tambah pengeluaran: nama={nama}, harga={harga}, jumlah={jumlah}"
+        f"[USER {user_id}] Tambah pengeluaran: nama={nama}, harga={harga}, jumlah={jumlah}, kolam_id={kolam_id}"
     )
 
     result = await create_pengeluaran(
@@ -81,6 +85,7 @@ async def pengeluaran_submit(
         jumlah=jumlah,
         tanggal=tanggal,
         catatan=catatan,
+        kolam_id=kolam_id,
     )
 
     if result:
@@ -103,6 +108,7 @@ async def pengeluaran_edit(
     jumlah: int = Form(None),
     tanggal: str = Form(None),
     catatan: str = Form(None),
+    kolam_id: int = Form(None),  # baru
 ):
     user_id = request.cookies.get("user_id")
     if not user_id:
@@ -120,6 +126,7 @@ async def pengeluaran_edit(
         jumlah=jumlah,
         tanggal=tanggal,
         catatan=catatan,
+        kolam_id=kolam_id,
     )
 
     if result:

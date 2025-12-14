@@ -243,6 +243,18 @@
   </table>
 </div>
 
+<!-- Pagination Controls -->
+<div id="paginationControls" class="flex justify-center mt-4 space-x-2 mb-5">
+  <button id="prevBtn" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-300" onclick="changePage('prev')" disabled>
+    <i class="fas fa-arrow-left"></i>
+  </button>
+  <span id="pageInfo" class="mx-4 text-lg text-gray-800 font-semibold">Page 1</span>
+  <button id="nextBtn" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-300" onclick="changePage('next')" disabled>
+    <i class="fas fa-arrow-right"></i>
+  </button>
+</div>
+
+
 <!-- Modal Edit Bibit -->
 <div
   id="editModal"

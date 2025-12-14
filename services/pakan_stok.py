@@ -6,17 +6,25 @@ from lib.supabase_client import get_db
 logger = logging.getLogger("service_pakan_stok")
 
 
-async def get_all_pakan_stok(user_id: int):
+async def get_all_pakan_stok(user_id: int, kolam_id: int = None):
     """
     Ambil semua stok pakan milik user
+    Bisa difilter berdasarkan kolam_id jika disediakan
     """
     db = get_db()
-    result = await asyncio.to_thread(
-        lambda: db.table("PakanStok").select("*").eq("user_id", user_id).execute()
-    )
+
+    def db_call():
+        query = db.table("PakanStok").select("*").eq("user_id", user_id)
+        if kolam_id:
+            query = query.eq("kolam_id", kolam_id)
+        return query.execute()
+
+    result = await asyncio.to_thread(db_call)
 
     if not hasattr(result, "data") or result.data is None:
-        logger.error(f"[PAKANSTOK] Gagal ambil data user_id={user_id}: {result}")
+        logger.error(
+            f"[PAKANSTOK] Gagal ambil data user_id={user_id}, kolam_id={kolam_id}: {result}"
+        )
         return []
 
     return result.data
@@ -27,11 +35,12 @@ async def add_pakan_stok(
     nama_pakan: str,
     jumlah: float,
     harga: float,
+    kolam_id: int = None,
     tanggal_masuk: str = None,
-    satuan: str = "g",  # baru
+    satuan: str = "g",
 ):
     """
-    Tambah stok pakan baru
+    Tambah stok pakan baru dengan opsional kolam_id
     """
     db = get_db()
     payload = {
@@ -39,8 +48,9 @@ async def add_pakan_stok(
         "nama_pakan": nama_pakan,
         "jumlah": jumlah,
         "harga": harga,
+        "kolam_id": kolam_id,
         "tanggal_masuk": tanggal_masuk,
-        "satuan": satuan,  # baru
+        "satuan": satuan,
     }
 
     result = await asyncio.to_thread(
@@ -48,10 +58,14 @@ async def add_pakan_stok(
     )
 
     if not hasattr(result, "data") or result.data is None:
-        logger.error(f"[PAKANSTOK] Gagal tambah stok user_id={user_id}: {result}")
+        logger.error(
+            f"[PAKANSTOK] Gagal tambah stok user_id={user_id}, kolam_id={kolam_id}: {result}"
+        )
         return None
 
-    logger.info(f"[PAKANSTOK] Stok ditambahkan user_id={user_id}: {result.data}")
+    logger.info(
+        f"[PAKANSTOK] Stok ditambahkan user_id={user_id}, kolam_id={kolam_id}: {result.data}"
+    )
     return result.data
 
 
@@ -61,8 +75,9 @@ async def edit_pakan_stok(
     nama_pakan: str,
     jumlah: float,
     harga: float,
+    kolam_id: int = None,
     tanggal_masuk: str = None,
-    satuan: str = "g",  # baru
+    satuan: str = "g",
 ):
     """
     Update stok pakan milik user
@@ -72,8 +87,9 @@ async def edit_pakan_stok(
         "nama_pakan": nama_pakan,
         "jumlah": jumlah,
         "harga": harga,
+        "kolam_id": kolam_id,
         "tanggal_masuk": tanggal_masuk,
-        "satuan": satuan,  # baru
+        "satuan": satuan,
     }
 
     result = await asyncio.to_thread(
@@ -86,11 +102,13 @@ async def edit_pakan_stok(
 
     if not hasattr(result, "data") or result.data is None:
         logger.error(
-            f"[PAKANSTOK] Gagal edit id={pakan_stok_id} user_id={user_id}: {result}"
+            f"[PAKANSTOK] Gagal edit id={pakan_stok_id} user_id={user_id}, kolam_id={kolam_id}: {result}"
         )
         return None
 
-    logger.info(f"[PAKANSTOK] Stok {pakan_stok_id} berhasil diedit user_id={user_id}")
+    logger.info(
+        f"[PAKANSTOK] Stok {pakan_stok_id} berhasil diedit user_id={user_id}, kolam_id={kolam_id}"
+    )
     return result.data
 
 

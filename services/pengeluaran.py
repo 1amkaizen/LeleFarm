@@ -10,33 +10,28 @@ logger = logging.getLogger("service_pengeluaran")
 # AMBIL SEMUA PENGELUARAN (FILTER USER)
 # ============================================================
 async def get_all_pengeluaran(user_id: int):
-    """
-    Ambil semua pengeluaran milik user tertentu, urut dari tanggal terbaru.
-    """
     db = get_db()
 
     def db_call():
+        # ambil pengeluaran beserta nama kolam
         return (
             db.table("Pengeluaran")
-            .select("*")
+            .select("*, Kolam(nama_kolam)")
             .eq("user_id", user_id)
             .order("tanggal", desc=True)
             .execute()
         )
 
-    try:
-        result = await asyncio.to_thread(db_call)
-
-        if not getattr(result, "data", None):
-            logger.warning(f"Tidak ada pengeluaran untuk user_id={user_id}")
-            return []
-
-        logger.info(f"Ambil {len(result.data)} pengeluaran untuk user_id={user_id}")
-        return result.data
-
-    except Exception as e:
-        logger.error(f"Gagal ambil pengeluaran untuk user_id={user_id}: {e}")
+    result = await asyncio.to_thread(db_call)
+    if not getattr(result, "data", None):
         return []
+
+    # gabung nama kolam ke dict pengeluaran
+    pengeluaran_list = []
+    for p in result.data:
+        p["nama_kolam"] = p.get("Kolam", {}).get("nama_kolam", "-")
+        pengeluaran_list.append(p)
+    return pengeluaran_list
 
 
 # ============================================================
@@ -49,6 +44,7 @@ async def create_pengeluaran(
     tanggal: str,
     jumlah: int = 1,
     catatan: str = None,
+    kolam_id: int = None,  # baru
 ):
     """
     Buat entry pengeluaran baru untuk user tertentu
@@ -61,6 +57,7 @@ async def create_pengeluaran(
         "tanggal": tanggal,
         "jumlah": jumlah,
         "catatan": catatan,
+        "kolam_id": kolam_id,  # baru
     }
 
     def db_call():
@@ -92,6 +89,7 @@ async def update_pengeluaran(
     tanggal: str = None,
     jumlah: int = None,
     catatan: str = None,
+    kolam_id: int = None,  # baru
 ):
     """
     Update pengeluaran tertentu milik user
@@ -108,6 +106,8 @@ async def update_pengeluaran(
         payload["jumlah"] = jumlah
     if catatan is not None:
         payload["catatan"] = catatan
+    if kolam_id is not None:
+        payload["kolam_id"] = kolam_id  # baru
 
     if not payload:
         logger.warning(

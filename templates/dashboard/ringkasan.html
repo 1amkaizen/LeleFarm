@@ -15,70 +15,102 @@ endblock %} {% block content %}
   </div>
 </div>
 
-<!-- Ringkasan Keuangan Per Kategori -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-  <!-- ================= BIBIT ================= -->
+<!-- Header Total Keseluruhan -->
+<div class="mb-4">
+  <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+    <i class="fas fa-chart-pie text-green-500"></i> Ringkasan Total Semua Kolam
+  </h2>
+  <p class="text-sm text-gray-600 mt-1">
+    Total pengeluaran bibit, pakan, dan operasional untuk semua kolam
+  </p>
+</div>
+<!-- Ringkasan Total Keseluruhan Semua Kolam -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+  <!-- Bibit Card -->
   <div class="bg-white shadow rounded-lg p-4 border">
     <h3 class="text-sm font-semibold text-gray-600 flex items-center gap-2">
-      <i class="fas fa-fish text-indigo-500 text-xl"></i>
-      Pengeluaran Bibit
+      <i class="fas fa-fish text-indigo-500 text-xl"></i> Pengeluaran Bibit
     </h3>
-
-    <p class="text-2xl font-bold text-indigo-600">
-      Rp {{ pengeluaran_bibit | replace(',', '.') }}
-    </p>
-
-    <!-- TEKS BAWAH LEBIH KECIL & SOFT -->
-    <p class="text-sm font-medium text-gray-500 mt-1">
-      {{ total_bibit }} ekor bibit
-    </p>
+    <p class="text-2xl font-bold text-indigo-600">Rp {{ total_pengeluaran_semua_kolam.bibit.total_harga_fmt }}</p>
+    <p class="text-sm text-gray-500">{{ total_pengeluaran_semua_kolam.bibit.total_item_fmt }} ekor bibit</p>
   </div>
-
-  <!-- ================= PAKAN ================= -->
+  <!-- Pakan Card -->
   <div class="bg-white shadow rounded-lg p-4 border">
     <h3 class="text-sm font-semibold text-gray-600 flex items-center gap-2">
-      <i class="fas fa-drumstick-bite text-yellow-500"></i>
-      Pengeluaran Pakan
+      <i class="fas fa-drumstick-bite text-yellow-500"></i> Pengeluaran Pakan
     </h3>
-
-    <p class="text-2xl font-bold text-yellow-600">
-      Rp {{ pengeluaran_pakan | replace(',', '.') }}
-    </p>
-
-    <p class="text-sm font-medium text-gray-500 mt-1">
-      Total pakan {{ total_pakan }}
-    </p>
+    <p class="text-2xl font-bold text-yellow-600">Rp {{ total_pengeluaran_semua_kolam.pakan.total_harga_fmt }}</p>
+    <p class="text-sm text-gray-500">Total pakan {{ total_pengeluaran_semua_kolam.pakan.total_item_fmt }} kg</p>
   </div>
-
-  <!-- ================= OPERASIONAL ================= -->
+  <!-- Operasional Card -->
   <div class="bg-white shadow rounded-lg p-4 border">
     <h3 class="text-sm font-semibold text-gray-600 flex items-center gap-2">
-      <i class="fas fa-receipt text-blue-500"></i>
-      Operasional Lain
+      <i class="fas fa-receipt text-blue-500"></i> Operasional Lain
     </h3>
-
-    <p class="text-2xl font-bold text-blue-600">
-      Rp {{ pengeluaran_operasional | replace(',', '.') }}
-    </p>
-
-    <p class="text-sm font-medium text-gray-500 mt-1">
-      {{ total_transaksi_operasional }} transaksi
-    </p>
+    <p class="text-2xl font-bold text-blue-600">Rp {{ total_pengeluaran_semua_kolam.operasional.total_harga_fmt }}</p>
+    <p class="text-sm text-gray-500">{{ total_pengeluaran_semua_kolam.operasional.total_item_fmt }} transaksi</p>
   </div>
-
-  <!-- ================= TOTAL ================= -->
+  <!-- Total Pengeluaran Card -->
   <div class="bg-blue-50 shadow rounded-lg p-4 border border-blue-200">
     <h3 class="text-sm font-semibold text-blue-700 flex items-center gap-2">
-      <i class="fas fa-wallet"></i>
-      Total Pengeluaran
+      <i class="fas fa-wallet"></i> Total Pengeluaran
     </h3>
-
-    <p class="text-3xl font-bold text-blue-800">
-      Rp {{ pengeluaran_total | replace(',', '.') }}
-    </p>
+    <p class="text-3xl font-bold text-blue-800">Rp {{ total_pengeluaran_semua_kolam.total_pengeluaran_fmt }}</p>
   </div>
 </div>
 
+
+<!-- Header Accordion Semua Kolam -->
+<div class="mb-4">
+  <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+    <i class="fas fa-water text-blue-500"></i> Detail Pengeluaran Per Kolam
+  </h2>
+  <p class="text-sm text-gray-600 mt-1">
+    Klik kolam untuk melihat rincian bibit, pakan, dan operasional
+  </p>
+</div>
+<!-- Bungkus semua accordion -->
+<div id="accordion-container">
+{% for kolam in pengeluaran_per_kolam %}
+<div class="accordion border rounded-lg mb-4">
+  <!-- Header Card Accordion -->
+  <div 
+    class="cursor-pointer flex justify-between items-center p-4 transition-all duration-300
+           {% if kolam.status_label == 'Belum Panen' %}
+           bg-red-100 to-red-200 hover:from-red-200 hover:to-red-300
+           {% else %}
+           bg-green-100 to-green-200 hover:from-green-200 hover:to-green-300
+           {% endif %}"
+    onclick="this.parentElement.querySelector('.accordion-body').classList.toggle('max-h-0'); this.querySelector('i').classList.toggle('rotate-180');"
+  >
+    <div class="flex items-center gap-3">
+      <i class="fas fa-water {% if kolam.status_label == 'Belum Panen' %}text-red-600{% else %}text-green-600{% endif %} text-xl"></i>
+      <div>
+        <div class="font-semibold {% if kolam.status_label == 'Belum Panen' %}text-red-800{% else %}text-green-800{% endif %} text-lg">
+          {{ kolam.nama_kolam }}
+        </div>
+        <div class="flex flex-col gap-0.5 text-sm">
+          <div class="{% if kolam.status_label == 'Belum Panen' %}text-red-700{% else %}text-green-700{% endif %}">
+            Status: {{ kolam.status_label }}
+          </div>
+          <div class="text-gray-600">
+            Tanggal Mulai: {{ kolam.tanggal_mulai }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <i class="fas fa-chevron-down {% if kolam.status_label == 'Belum Panen' %}text-red-800{% else %}text-green-800{% endif %} transition-transform duration-300"></i>
+  </div>
+  
+
+
+  <!-- Body Accordion (default hidden) -->
+  <div class="accordion-body max-h-0 overflow-hidden transition-all duration-500 bg-white">
+    
+    <div class="p-4">
+
+    <!-- Tabel Detail (Bibit / Pakan / Operasional) -->
+    
 <!-- BIBIT -->
 <div class="bg-white border rounded-xl shadow-sm p-4 mb-8">
   <!-- HEADER -->
@@ -96,74 +128,49 @@ endblock %} {% block content %}
 
   <!-- Tambahkan overflow-x-auto -->
   <div class="overflow-x-auto">
-    <table
-      class="w-full table-auto border bg-white shadow rounded-lg text-center"
-    >
+    <table class="w-full table-auto border text-center paginate-bibit" data-kolam="{{ kolam.id }}">
       <thead class="bg-indigo-100 text-indigo-800">
         <tr>
-          <th class="border px-2 py-1 whitespace-nowrap">#</th>
-          <th class="border px-2 py-1 whitespace-nowrap">
-            <i class="fas fa-tag mr-1"></i> Jenis
-          </th>
-          <th class="border px-2 py-1 whitespace-nowrap">
-            <i class="fas fa-sort-amount-up mr-1"></i> Jumlah
-          </th>
-          <th class="border px-2 py-1 whitespace-nowrap">
-            <i class="fas fa-money-bill-wave mr-1"></i> Total
-          </th>
+          <th>No</th>
+          <th>Tanggal</th>
+          <th>Jenis</th>
+          <th>Jumlah</th>
+          <th>Total</th>
+          
         </tr>
       </thead>
-
-      <tbody class="paginate-bibit">
-        {% for item in pengeluaran_bibit_detail %}
+      <tbody>
+        {% for item in kolam.bibit.detail %}
         <tr>
-          <td class="border px-2 py-1 whitespace-nowrap">{{ loop.index }}</td>
-          <td class="border px-2 py-1 whitespace-nowrap">{{ item.nama }}</td>
-          <td class="border px-2 py-1 whitespace-nowrap">{{ item.jumlah }} Ekor</td>
-          <td class="border px-2 py-1 whitespace-nowrap">Rp {{ item.total }}</td>
+          <td>{{ loop.index }}</td>
+          <td>{{ item.tanggal }}</td>
+          <td>{{ item.nama }}</td>
+          <td>{{ item.jumlah }} Ekor</td>
+          <td>Rp {{ item.total }}</td>
+          
         </tr>
         {% endfor %}
       </tbody>
-
       <tfoot class="bg-indigo-50 font-semibold">
         <tr>
-          <td colspan="2" class="border px-2 py-2 text-right whitespace-nowrap">
-            <span
-              class="inline-block bg-blue-600 text-white text-xs px-2 py-0.5 rounded mr-2"
-            >
-              TOTAL
-            </span>
-            Bibit ({{ total_transaksi_bibit }} Transaksi)
-          </td>
-          <td class="border px-2 py-2 text-center whitespace-nowrap">{{ total_bibit }} Ekor</td>
-          <td class="border px-2 py-2 text-center whitespace-nowrap">Rp {{ pengeluaran_bibit }}</td>
+          <td colspan="2" class="text-right">TOTAL Bibit</td>
+          <td>{{ kolam.bibit.total_item_fmt }} Ekor</td>
+          <td>Rp {{ kolam.bibit.total_harga_fmt }}</td>
+          <td></td> 
         </tr>
       </tfoot>
+      
     </table>
   </div>
 
   <!-- PAGINATION BIBIT-->
   <div class="flex justify-center mt-3 mb-2 space-x-2">
-    <button
-      onclick="changePage('bibit', -1)"
-      id="prev-bibit"
-      class="px-4 py-1 bg-indigo-500 text-white rounded disabled:bg-gray-300"
-    >
-      ‹
-    </button>
-
-    <span id="info-bibit" class="font-semibold text-indigo-700">Page 1</span>
-
-    <button
-      onclick="changePage('bibit', 1)"
-      id="next-bibit"
-      class="px-4 py-1 bg-indigo-500 text-white rounded disabled:bg-gray-300"
-    >
-      ›
-    </button>
+    <button id="prev-bibit-{{ kolam.id }}" class="prev-btn px-4 py-1 bg-indigo-500 text-white rounded disabled:bg-gray-300">‹</button>
+    <span id="info-bibit-{{ kolam.id }}" class="font-semibold text-indigo-700">Page 1</span>
+    <button id="next-bibit-{{ kolam.id }}" class="next-btn px-4 py-1 bg-indigo-500 text-white rounded disabled:bg-gray-300">›</button>
+    
   </div>
 </div>
-
 
 <!-- PAKAN -->
 <div class="bg-white border rounded-xl shadow-sm p-4 mb-8">
@@ -180,39 +187,35 @@ endblock %} {% block content %}
 
   <!-- WRAP TABLE AGAR SCROLL DI MOBILE -->
   <div class="overflow-x-auto">
-    <table
-      class="w-full table-auto border bg-white shadow rounded-lg text-center"
-    >
+    <table class="w-full table-auto border text-center paginate-pakan" data-kolam="{{ kolam.id }}">
       <thead class="bg-yellow-100 text-yellow-800">
         <tr>
-          <th class="border px-2 py-1 whitespace-nowrap">#</th>
-          <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-box mr-1"></i> Nama</th>
-          <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-weight-hanging mr-1"></i> Jumlah</th>
-          <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-money-bill mr-1"></i> Total</th>
+          <th>No</th>
+          <th>Tanggal</th>
+          <th>Nama</th>
+          <th>Jumlah</th>
+          <th>Total</th>
+         
         </tr>
       </thead>
-
-      <tbody class="paginate-pakan">
-        {% for item in pengeluaran_pakan_detail %}
+      <tbody>
+        {% for item in kolam.pakan.detail %}
         <tr>
-          <td class="border px-2 py-1 whitespace-nowrap">{{ loop.index }}</td>
-          <td class="border px-2 py-1 whitespace-nowrap">{{ item.nama }}</td>
-          <td class="border px-2 py-1 whitespace-nowrap">{{ item.jumlah }} KG</td>
-          <td class="border px-2 py-1 whitespace-nowrap">Rp {{ item.total }}</td>
+          <td>{{ loop.index }}</td>
+          <td>{{ item.tanggal }}</td>
+          <td>{{ item.nama }}</td>
+          <td>{{ item.jumlah }} kg</td>
+          <td>Rp {{ item.total }}</td>
+          
         </tr>
         {% endfor %}
       </tbody>
-
       <tfoot class="bg-yellow-50 font-semibold">
         <tr>
-          <td colspan="2" class="border px-2 py-2 text-right whitespace-nowrap">
-            <span class="inline-block bg-blue-600 text-white text-xs px-2 py-0.5 rounded mr-2">
-              TOTAL
-            </span>
-            Pakan ({{ total_transaksi_pakan }} Transaksi)
-          </td>
-          <td class="border px-2 py-2 text-center whitespace-nowrap">{{ total_pakan }}</td>
-          <td class="border px-2 py-2 text-center whitespace-nowrap">Rp {{ pengeluaran_pakan }}</td>
+          <td colspan="2" class="text-right">TOTAL Pakan </td>
+          <td>{{ kolam.pakan.total_item_fmt }} kg</td>
+          <td>Rp {{ kolam.pakan.total_harga_fmt }}</td>
+          <td></td> 
         </tr>
       </tfoot>
     </table>
@@ -221,25 +224,24 @@ endblock %} {% block content %}
   <!-- PAGINATION PAKAN-->
   <div class="flex justify-center mt-3 mb-2 space-x-2">
     <button
-      onclick="changePage('pakan', -1)"
-      id="prev-pakan"
+     
+      id="prev-pakan-{{ kolam.id }}"
       class="px-4 py-1 bg-yellow-500 text-white rounded disabled:bg-gray-300"
     >
       ‹
     </button>
 
-    <span id="info-pakan" class="font-semibold text-yellow-600">Page 1</span>
+    <span id="info-pakan-{{ kolam.id }}" class="font-semibold text-yellow-600">Page 1</span>
 
     <button
-      onclick="changePage('pakan', 1)"
-      id="next-pakan"
+   
+      id="next-pakan-{{ kolam.id }}"
       class="px-4 py-1 bg-yellow-500 text-white rounded disabled:bg-gray-300"
     >
       ›
     </button>
   </div>
 </div>
-
 
 <!-- OPERASIONAL -->
 <div class="bg-white border rounded-xl shadow-sm p-4 mb-8">
@@ -258,44 +260,35 @@ endblock %} {% block content %}
 
   <!-- WRAP TABLE AGAR SCROLL DI MOBILE -->
   <div class="overflow-x-auto">
-    <table class="w-full table-auto border bg-white shadow rounded-lg text-center">
+    <table class="w-full table-auto border text-center paginate-operasional" data-kolam="{{ kolam.id }}">
       <thead class="bg-blue-100 text-blue-800">
         <tr>
-          <th class="border px-2 py-1 whitespace-nowrap">#</th>
-          <th class="border px-2 py-1 whitespace-nowrap">
-            <i class="fas fa-file-alt mr-1"></i> Nama
-          </th>
-          <th class="border px-2 py-1 whitespace-nowrap">
-            <i class="fas fa-hashtag mr-1"></i> Jumlah
-          </th>
-          <th class="border px-2 py-1 whitespace-nowrap">
-            <i class="fas fa-coins mr-1"></i> Total
-          </th>
+          <th>No</th>
+          <th>Tanggal</th>
+          <th>Nama</th>
+          <th>Jumlah</th>
+          <th>Total</th>
+          
         </tr>
       </thead>
-
-      <tbody class="paginate-operasional">
-        {% for item in pengeluaran_operasional_detail %}
+      <tbody>
+        {% for item in kolam.operasional.detail %}
         <tr>
-          <td class="border px-2 py-1 whitespace-nowrap">{{ loop.index }}</td>
-          <td class="border px-2 py-1 whitespace-nowrap">{{ item.nama }}</td>
-          <td class="border px-2 py-1 whitespace-nowrap">{{ item.jumlah }}</td>
-          <td class="border px-2 py-1 whitespace-nowrap">Rp {{ item.total }}</td>
+          <td>{{ loop.index }}</td>
+          <td>{{ item.tanggal }}</td>
+          <td>{{ item.nama }}</td>
+          <td>{{ item.jumlah }}</td>
+          <td>Rp {{ item.total }}</td>
+          
         </tr>
         {% endfor %}
       </tbody>
-
       <tfoot class="bg-blue-50 font-semibold">
         <tr>
-          <td colspan="3" class="border px-2 py-2 text-right whitespace-nowrap">
-            <span class="inline-block bg-blue-600 text-white text-xs px-2 py-0.5 rounded mr-2">
-              TOTAL
-            </span>
-            Operasional ({{ total_item_operasional }} Item)
-          </td>
-          <td class="border px-2 py-2 text-center text-blue-700 whitespace-nowrap">
-            Rp {{ pengeluaran_operasional }}
-          </td>
+          <td colspan="2" class="text-right">TOTAL Operasional</td>
+          <td>{{ kolam.operasional.total_item_fmt }}</td>
+          <td>Rp {{ kolam.operasional.total_harga_fmt }}</td>
+          <td></td> 
         </tr>
       </tfoot>
     </table>
@@ -304,70 +297,208 @@ endblock %} {% block content %}
   <!-- PAGINATION OPERASIONAL-->
   <div class="flex justify-center mt-3 mb-2 space-x-2">
     <button
-      onclick="changePage('operasional', -1)"
-      id="prev-operasional"
+      
+      id="prev-operasional-{{ kolam.id }}"
       class="px-4 py-1 bg-blue-500 text-white rounded disabled:bg-gray-300"
     >
       ‹
     </button>
 
-    <span id="info-operasional" class="font-semibold text-blue-600">Page 1</span>
+    <span id="info-operasional-{{ kolam.id }}" class="font-semibold text-blue-600">Page 1</span>
 
     <button
-      onclick="changePage('operasional', 1)"
-      id="next-operasional"
+     
+      id="next-operasional-{{ kolam.id }}"
       class="px-4 py-1 bg-blue-500 text-white rounded disabled:bg-gray-300"
     >
       ›
     </button>
   </div>
 </div>
+</div>
+  </div>
+</div>
 
+{% endfor %}
+</div>
+<!-- Pagination Controls Accordion -->
+<div class="flex justify-center mt-4 space-x-2 mb-5">
+  <button id="prev-accordion" class="px-6 py-2 bg-green-500 text-white rounded-lg disabled:bg-gray-300">‹</button>
+  <span id="info-accordion" class="mx-4 text-lg font-semibold">Page 1</span>
+  <button id="next-accordion" class="px-6 py-2 bg-green-500 text-white rounded-lg disabled:bg-gray-300">›</button>
+</div>
+
+
+  
+<!-- TABEL PERBANDINGAN -->
+<h2 class="text-xl font-semibold mb-2 flex items-center gap-2 text-blue-700">
+  <i class="fas fa-coins text-blue-500"></i> Perbandingan Pengeluaran Per Kolam
+</h2>
+
+<div class="overflow-x-auto mb-5">
+  <table id="perbandingan-table" class="w-full md:min-w-[800px] table-auto border-collapse border bg-white shadow rounded-lg overflow-hidden text-center">
+    <thead class="bg-blue-100 text-blue-700 font-semibold">
+      <tr>
+        <th class="border px-2 py-1 whitespace-nowrap">Kolam</th>
+        <th class="border px-2 py-1 whitespace-nowrap">Total Pengeluaran</th>
+        <th class="border px-2 py-1 whitespace-nowrap">Selisih</th>
+        <th class="border px-2 py-1 whitespace-nowrap">Operasional</th>
+        <th class="border px-2 py-1 whitespace-nowrap">Bibit</th>
+        <th class="border px-2 py-1 whitespace-nowrap">Pakan</th>
+        <th class="border px-2 py-1 whitespace-nowrap">Proporsi Terhadap Kolam Terbesar</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200">
+      {% for kolam in pengeluaran_per_kolam %}
+      <tr class="{{ loop.cycle('bg-white', 'bg-gray-50') }}">
+        <td class="border px-2 py-1 whitespace-nowrap font-semibold">{{ kolam.nama_kolam }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">Rp {{ kolam.total_pengeluaran_fmt }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap {% if kolam.selisih_total < 0 %}text-red-600{% elif kolam.selisih_total > 0 %}text-green-600{% endif %}">
+          {{ kolam.selisih_fmt }}
+        </td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ kolam.operasional.total_harga_fmt_with_pct }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ kolam.bibit.total_harga_fmt_with_pct }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">{{ kolam.pakan.total_harga_fmt_with_pct }}</td>
+        <td class="border px-2 py-1 whitespace-nowrap">
+          <div class="flex items-center gap-2">
+            <!-- Bar -->
+            <div class="flex-1 h-4 bg-gray-200 rounded overflow-hidden">
+              <div 
+                class="h-4 rounded"
+                style="
+                  width: {{ kolam.proporsi_max if kolam.proporsi_max > 0 else 5 }}%;
+                  {% if kolam.proporsi_max > 70 %}
+                  background: linear-gradient(to right, #16a34a, #059669); /* hijau */
+                  {% elif kolam.proporsi_max > 40 %}
+                  background: linear-gradient(to right, #eab308, #facc15); /* kuning */
+                  {% else %}
+                  background: linear-gradient(to right, #dc2626, #f87171); /* merah */
+                  {% endif %}
+                "
+              ></div>
+            </div>
+            <!-- Persentase di samping bar -->
+            <span class="text-sm font-semibold
+              {% if kolam.proporsi_max > 70 %}text-green-600
+              {% elif kolam.proporsi_max > 40 %}text-yellow-600
+              {% else %}text-red-600{% endif %}">
+              {{ kolam.proporsi_max }}%
+            </span>
+          </div>
+        </td>
+        
+        
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+
+<!-- Pagination Controls -->
+<div class="flex justify-center mt-4 space-x-2 mb-5">
+  <button id="prev-perbandingan" class="px-6 py-2 bg-blue-500 text-white rounded-lg disabled:bg-gray-300">‹</button>
+  <span id="info-perbandingan" class="mx-4 text-lg font-semibold">Page 1</span>
+  <button id="next-perbandingan" class="px-6 py-2 bg-blue-500 text-white rounded-lg disabled:bg-gray-300">›</button>
+</div>
+
+<script>
+  const ROWS_PER_PAGE_PERBANDINGAN = 5;
+  const tablePB = document.getElementById("perbandingan-table");
+  const rowsPB = Array.from(tablePB.querySelectorAll("tbody tr"));
+  let pagePB = 1;
+  const infoPB = document.getElementById("info-perbandingan");
+  const prevPB = document.getElementById("prev-perbandingan");
+  const nextPB = document.getElementById("next-perbandingan");
+
+  const renderPB = () => {
+    const totalPages = Math.ceil(rowsPB.length / ROWS_PER_PAGE_PERBANDINGAN) || 1;
+    const start = (pagePB - 1) * ROWS_PER_PAGE_PERBANDINGAN;
+    const end = start + ROWS_PER_PAGE_PERBANDINGAN;
+    rowsPB.forEach((row, i) => row.style.display = i >= start && i < end ? "" : "none");
+    infoPB.innerText = `Page ${pagePB} of ${totalPages}`;
+    prevPB.disabled = pagePB === 1;
+    nextPB.disabled = pagePB === totalPages;
+  }
+
+  prevPB.addEventListener("click", () => { pagePB--; renderPB(); });
+  nextPB.addEventListener("click", () => { pagePB++; renderPB(); });
+
+  renderPB();
+</script>
 
 <script>
   const ROWS_PER_PAGE = 5;
-
-  const tables = {
-    bibit: { page: 1, rows: document.querySelectorAll(".paginate-bibit tr") },
-    pakan: { page: 1, rows: document.querySelectorAll(".paginate-pakan tr") },
-    operasional: {
-      page: 1,
-      rows: document.querySelectorAll(".paginate-operasional tr"),
-    },
-  };
-
-  function renderTable(type) {
-    const table = tables[type];
-    const start = (table.page - 1) * ROWS_PER_PAGE;
-    const end = start + ROWS_PER_PAGE;
-    const totalPages = Math.ceil(table.rows.length / ROWS_PER_PAGE) || 1;
-
-    table.rows.forEach((row, i) => {
-      row.style.display = i >= start && i < end ? "" : "none";
+  
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("table[data-kolam]").forEach((tableEl) => {
+      const kolamId = tableEl.dataset.kolam;
+      const type = tableEl.classList.contains("paginate-bibit")
+        ? "bibit"
+        : tableEl.classList.contains("paginate-pakan")
+        ? "pakan"
+        : "operasional";
+  
+      const rows = Array.from(tableEl.querySelectorAll("tbody tr"));
+      let page = 1; // page per tabel
+  
+      const infoEl = document.getElementById(`info-${type}-${kolamId}`);
+      const prevBtn = document.getElementById(`prev-${type}-${kolamId}`);
+      const nextBtn = document.getElementById(`next-${type}-${kolamId}`);
+  
+      const render = () => {
+        const totalPages = Math.ceil(rows.length / ROWS_PER_PAGE) || 1;
+        const start = (page - 1) * ROWS_PER_PAGE;
+        const end = start + ROWS_PER_PAGE;
+  
+        rows.forEach((row, i) => {
+          row.style.display = i >= start && i < end ? "" : "none";
+        });
+  
+        infoEl.innerText = `Page ${page} of ${totalPages}`;
+        prevBtn.disabled = page === 1;
+        nextBtn.disabled = page === totalPages;
+      };
+  
+      // Pakai addEventListener supaya tidak overwrite loop lain
+      prevBtn.addEventListener("click", () => {
+        page = Math.max(1, page - 1);
+        render();
+      });
+  
+      nextBtn.addEventListener("click", () => {
+        const totalPages = Math.ceil(rows.length / ROWS_PER_PAGE) || 1;
+        page = Math.min(totalPages, page + 1);
+        render();
+      });
+  
+      render(); // render pertama kali
     });
-
-    document.getElementById(
-      `info-${type}`
-    ).innerText = `Page ${table.page} of ${totalPages}`;
-
-    document.getElementById(`prev-${type}`).disabled = table.page === 1;
-    document.getElementById(`next-${type}`).disabled =
-      table.page === totalPages;
-  }
-
-  function changePage(type, delta) {
-    const table = tables[type];
-    const totalPages = Math.ceil(table.rows.length / ROWS_PER_PAGE) || 1;
-
-    table.page += delta;
-    if (table.page < 1) table.page = 1;
-    if (table.page > totalPages) table.page = totalPages;
-
-    renderTable(type);
-  }
-
-  // init semua tabel
-  Object.keys(tables).forEach(renderTable);
-</script>
-
+  });
+  </script>
+  
+  <script>
+    const ACCORDIONS_PER_PAGE = 2; // accordion per page
+    const accordionContainer = document.getElementById("accordion-container");
+    const accordions = Array.from(accordionContainer.querySelectorAll(".accordion"));
+    let accordionPage = 1;
+    const infoAccordion = document.getElementById("info-accordion");
+    const prevAccordion = document.getElementById("prev-accordion");
+    const nextAccordion = document.getElementById("next-accordion");
+    
+    const renderAccordion = () => {
+      const totalPages = Math.ceil(accordions.length / ACCORDIONS_PER_PAGE) || 1;
+      const start = (accordionPage - 1) * ACCORDIONS_PER_PAGE;
+      const end = start + ACCORDIONS_PER_PAGE;
+      accordions.forEach((acc, i) => acc.style.display = i >= start && i < end ? "" : "none");
+      infoAccordion.innerText = `Page ${accordionPage} of ${totalPages}`;
+      prevAccordion.disabled = accordionPage === 1;
+      nextAccordion.disabled = accordionPage === totalPages;
+    };
+    
+    prevAccordion.addEventListener("click", () => { accordionPage--; renderAccordion(); });
+    nextAccordion.addEventListener("click", () => { accordionPage++; renderAccordion(); });
+    
+    renderAccordion();
+    </script>
 {% endblock %}

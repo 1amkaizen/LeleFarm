@@ -6,7 +6,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from services import pakan_stok
+from services import pakan_stok, kolam  # kolam service untuk ambil list kolam
 
 router = APIRouter()
 logger = logging.getLogger("router_pakan_stok")
@@ -21,9 +21,16 @@ async def pakan_stok_page(request: Request):
         return RedirectResponse("/login", status_code=303)
 
     user_id = int(user_id)
-    stok_list = await pakan_stok.get_all_pakan_stok(user_id=user_id)
 
-    # total_jumlah_g sekarang masih gram
+    # ambil daftar kolam untuk dropdown
+    kolam_list = await kolam.get_all_kolam(user_id)
+
+    # ambil stok pakan, bisa difilter kolam jika query param ada
+    kolam_id = request.query_params.get("kolam_id")
+    kolam_id = int(kolam_id) if kolam_id else None
+
+    stok_list = await pakan_stok.get_all_pakan_stok(user_id=user_id, kolam_id=kolam_id)
+
     total_jumlah_g = 0
     total_harga = 0
     for p in stok_list:
@@ -32,10 +39,7 @@ async def pakan_stok_page(request: Request):
         total_jumlah_g += jumlah_g
         total_harga += float(p["harga"])
 
-    # ============================
-    # konversi ke kg bulat
     total_jumlah_kg = int(total_jumlah_g / 1000)  # buang desimal
-
 
     logger.info(
         f"[USER {user_id}] Render pakan_stok_page: {len(stok_list)} data ditemukan"
@@ -48,6 +52,8 @@ async def pakan_stok_page(request: Request):
             "stok_list": stok_list,
             "total_jumlah_kg": total_jumlah_kg,
             "total_harga": total_harga,
+            "kolam_list": kolam_list,  # untuk dropdown
+            "selected_kolam_id": kolam_id,
         },
     )
 
@@ -63,6 +69,8 @@ async def pakan_stok_add(request: Request):
     nama_pakan = form.get("nama_pakan")
     jumlah_str = form.get("jumlah", "0").strip()
     satuan = form.get("satuan", "g")
+    kolam_id = form.get("kolam_id")
+    kolam_id = int(kolam_id) if kolam_id else None
     try:
         jumlah = float(jumlah_str)
     except ValueError:
@@ -71,7 +79,7 @@ async def pakan_stok_add(request: Request):
     tanggal_masuk = form.get("tanggal_masuk")
 
     added = await pakan_stok.add_pakan_stok(
-        user_id, nama_pakan, jumlah, harga, tanggal_masuk, satuan
+        user_id, nama_pakan, jumlah, harga, kolam_id, tanggal_masuk, satuan
     )
     if not added:
         logger.error(f"[USER {user_id}] Gagal tambah stok pakan {nama_pakan}")
@@ -91,6 +99,8 @@ async def pakan_stok_edit(request: Request):
     nama_pakan = form.get("nama_pakan")
     jumlah_str = form.get("jumlah", "0").strip()
     satuan = form.get("satuan", "g")
+    kolam_id = form.get("kolam_id")
+    kolam_id = int(kolam_id) if kolam_id else None
     try:
         jumlah = float(jumlah_str)
     except ValueError:
@@ -99,7 +109,14 @@ async def pakan_stok_edit(request: Request):
     tanggal_masuk = form.get("tanggal_masuk")
 
     updated = await pakan_stok.edit_pakan_stok(
-        user_id, pakan_stok_id, nama_pakan, jumlah, harga, tanggal_masuk, satuan
+        user_id,
+        pakan_stok_id,
+        nama_pakan,
+        jumlah,
+        harga,
+        kolam_id,
+        tanggal_masuk,
+        satuan,
     )
     if updated:
         logger.info(f"[USER {user_id}] Stok {pakan_stok_id} diedit")
