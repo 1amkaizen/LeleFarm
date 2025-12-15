@@ -1,6 +1,7 @@
 # services/kolam.py
 import logging
 import asyncio
+from datetime import date
 from lib.supabase_client import get_db
 
 logger = logging.getLogger("service_kolam")
@@ -191,62 +192,106 @@ def get_kolam_status(kolam_entry):
         return "belum"
 
 
-async def update_status_kolam(
-    user_id: int,
-    kolam_id: int,
-    status: str,
-):
+async def update_status_kolam(user_id: int, kolam_id: int, status: str):
     """
-    Update status panen kolam (belum / sudah) milik user terkait
+    Update status panen kolam (belum / sudah) milik user terkait.
+    Jika status menjadi 'sudah', catat panen ke tabel Panen tanpa duplikat.
     """
     logger.info(
         f"[KOLAM] Request update status_panen kolam id={kolam_id} "
         f"user_id={user_id} status={status}"
     )
 
-    # Validasi status sesuai constraint database
     if status not in ("belum", "sudah"):
         logger.error(f"[KOLAM] Status panen tidak valid: {status}")
         return None
 
-    # Pastikan kolam milik user
-    kolam = await get_kolam_by_id(kolam_id, user_id)
-    if not kolam:
+    db = get_db()
+
+    # Ambil data kolam dulu
+    kolam = await asyncio.to_thread(
+        lambda: db.table("Kolam")
+        .select("*")
+        .eq("id", kolam_id)
+        .eq("user_id", user_id)
+        .single()
+        .execute()
+    )
+
+    if not hasattr(kolam, "data") or not kolam.data:
         logger.error(
-            f"[KOLAM] Gagal update status_panen: kolam id={kolam_id} "
-            f"user_id={user_id} tidak ditemukan"
+            f"[KOLAM] Kolam id={kolam_id} tidak ditemukan untuk user_id={user_id}"
         )
         return None
 
-    # Kalau status sama, gak perlu update
-    if kolam.get("status_panen") == status:
+    kolam_data = kolam.data
+
+    # Kalau status sama, skip
+    if kolam_data.get("status_panen") == status:
         logger.info(
             f"[KOLAM] Status panen kolam id={kolam_id} sudah '{status}', skip update"
         )
-        return kolam
+        return kolam_data
 
-    db = get_db()
+    # Update status kolam
+    update_res = await asyncio.to_thread(
+        lambda: db.table("Kolam")
+        .update({"status_panen": status})
+        .eq("id", kolam_id)
+        .eq("user_id", user_id)
+        .execute()
+    )
 
-    def db_call():
-        return (
-            db.table("Kolam")
-            .update({"status_panen": status})
-            .eq("id", kolam_id)
-            .eq("user_id", user_id)
-            .execute()
-        )
-
-    result = await asyncio.to_thread(db_call)
-
-    if not hasattr(result, "data") or not result.data:
+    if not hasattr(update_res, "data") or not update_res.data:
         logger.error(
-            f"[KOLAM] Gagal update status_panen kolam id={kolam_id} "
-            f"user_id={user_id}: {result}"
+            f"[KOLAM] Gagal update status_panen kolam id={kolam_id} user_id={user_id}"
         )
         return None
 
     logger.info(
-        f"[KOLAM] Status panen kolam id={kolam_id} berhasil diubah "
-        f"ke '{status}' user_id={user_id}"
+        f"[KOLAM] Status panen kolam id={kolam_id} berhasil diubah ke '{status}'"
     )
-    return result.data[0]
+
+    # Jika sudah panen, catat ke tabel Panen, tapi cek dulu jangan duplikat hari ini
+    if status == "sudah":
+        today = date.today().isoformat()
+
+        # cek apakah panen hari ini sudah ada
+        exists_res = await asyncio.to_thread(
+            lambda: db.table("Panen")
+            .select("*")
+            .eq("kolam_id", kolam_id)
+            .eq("user_id", user_id)
+            .eq("tanggal_panen", today)
+            .execute()
+        )
+
+        if exists_res.data:
+            logger.info(
+                f"Panen kolam id={kolam_id} hari ini sudah tercatat, skip insert"
+            )
+        else:
+            panen_payload = {
+                "user_id": user_id,
+                "kolam_id": kolam_id,
+                "nama_kolam": kolam_data.get("nama_kolam"),
+                "tanggal_panen": today,
+                "jumlah_ikan": kolam_data.get("jumlah_ikan", 0),
+                "total_berat": kolam_data.get("total_berat", 0),
+                "catatan": f"Panen otomatis pada {today}",
+            }
+
+            panen_res = await asyncio.to_thread(
+                lambda: db.table("Panen").insert(panen_payload).execute()
+            )
+
+            if hasattr(panen_res, "error") and panen_res.error:
+                logger.error(
+                    f"Gagal catat panen kolam id={kolam_id}: {panen_res.error}"
+                )
+            else:
+                logger.info(
+                    f"Panen kolam id={kolam_id} tercatat di tabel Panen tanggal={today}"
+                )
+
+    return update_res.data[0]

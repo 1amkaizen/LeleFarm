@@ -5,92 +5,234 @@
 
 {% block content %}
 
-<!-- Breadcrumb / Page title -->
-<div class="mb-6 mt-5">
-  <h1 class="text-2xl font-semibold text-blue-900">{% block page_title %}Dashboard{% endblock %}</h1>
-  <p class="text-sm text-blue-700">{% block page_subtitle %}Ringkasan operasional kolam lele{% endblock %}</p>
-</div>
 
-<!-- Grid Statistik Utama dengan Icon -->
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-  {% set stat_cards = [
-    {'icon':'fas fa-fish','icon_color':'text-blue-500','label':'Total Bibit','value':total_bibit ~ ' ekor', 'id': 'totalBibit'},
-    {'icon':'fas fa-bread-slice','icon_color':'text-green-500','label':'Total Pakan','value':total_pakan or 0, 'id': 'totalPakan'},
-    {'icon':'fas fa-skull-crossbones','icon_color':'text-red-500','label':'Total Kematian','value':total_kematian ~ ' ekor', 'id': 'totalKematian'},
-    {'icon':'fas fa-water','icon_color':'text-indigo-500','label':'Total Kolam','value':total_kolam, 'id': 'totalKolam','extra': kolam_belum ~ ' belum panen / ' ~ kolam_sudah ~ ' sudah panen'}
-  ] %}
-  {% for card in stat_cards %}
-  <div class="bg-white p-4 rounded-lg shadow flex items-center gap-3 hover:shadow-lg transition">
-    <i class="{{ card.icon }} {{ card.icon_color }} text-3xl"></i>
+<!-- ===== PAGE HEADER + BREADCRUMB ===== -->
+<div class="mb-8 mt-5">
+  <!-- Breadcrumb -->
+  <nav class="text-sm text-gray-500 mb-2">
+    <ol class="flex items-center space-x-2">
+      <li class="hover:text-blue-600 transition">
+        <i class="fas fa-home mr-1"></i> Dashboard
+      </li>
+      <li>/</li>
+      <li class="text-blue-700 font-semibold">
+        Dashboard
+      </li>
+    </ol>
+  </nav>
+
+  <!-- Page Title -->
+  <div class="flex items-center gap-4 
+              bg-gradient-to-r from-blue-500 to-blue-600 
+              text-white p-5 rounded-2xl shadow-lg">
+    
+    <!-- Icon (ringkasan / overview) -->
+    <div class="bg-white/20 p-3 rounded-xl">
+      <i class="fas fa-chart-line text-2xl"></i>
+    </div>
+
+    <!-- Title -->
     <div>
-      <div class="text-sm text-blue-700">{{ card.label }}</div>
-      <div class="text-2xl font-bold text-blue-900" id="{{ card.id }}">{{ card.value }}</div>
-      {% if card.extra %}
-      <div class="text-xs text-blue-500">{{ card.extra }}</div>
-      {% endif %}
+      <h1 class="text-2xl font-bold leading-tight">
+        Dashboard
+      </h1>
+      <p class="text-sm text-blue-100">
+        Ringkasan data kolam, pakan, kematian, dan keuangan
+      </p>
     </div>
   </div>
-  {% endfor %}
 </div>
+
+
+<!-- Top Dashboard Stats Bar (Modern • Non-Card) -->
+<div class="mb-6">
+  <div class="flex flex-col md:flex-row items-stretch
+              rounded-2xl overflow-hidden
+              bg-white/70 backdrop-blur-xl
+              border border-blue-100
+              shadow-lg">
+
+    {% set stat_items = [
+      {'icon':'fas fa-fish','color':'text-blue-500','label':'Total Bibit','value':total_bibit ~ ' ekor','id':'totalBibit'},
+      {'icon':'fas fa-bread-slice','color':'text-green-500','label':'Total Pakan','value':total_pakan or 0,'id':'totalPakan'},
+      {'icon':'fas fa-skull-crossbones','color':'text-red-500','label':'Total Kematian','value':total_kematian ~ ' ekor','id':'totalKematian'},
+      {'icon':'fas fa-water','color':'text-indigo-500','label':'Total Kolam','value':total_kolam,'id':'totalKolam','extra': kolam_belum ~ ' belum panen / ' ~ kolam_sudah ~ ' sudah panen'}
+    ] %}
+
+    {% for item in stat_items %}
+    <div class="group flex-1 flex items-center gap-4 px-6 py-5
+                hover:bg-blue-50/60 transition relative">
+
+      <!-- Vertical Divider -->
+      {% if not loop.first %}
+      <div class="absolute left-0 top-4 bottom-4 w-px bg-blue-100"></div>
+      {% endif %}
+
+      <!-- Icon -->
+      <div class="flex items-center justify-center w-11 h-11
+                  rounded-xl bg-blue-100/50">
+        <i class="{{ item.icon }} {{ item.color }} text-lg"></i>
+      </div>
+
+      <!-- Text -->
+      <div class="flex flex-col">
+        <span class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+          {{ item.label }}
+        </span>
+
+        <span id="{{ item.id }}"
+              class="text-2xl font-black text-blue-900 leading-tight">
+          {{ item.value }}
+        </span>
+
+        {% if item.extra %}
+        <span class="text-xs text-blue-500">
+          {{ item.extra }}
+        </span>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+
+  </div>
+</div>
+
 
 
 <!-- Detail Kolam (Grid Responsive, Enhanced) -->
 <div class="mb-6">
-  <h2 class="text-xl font-semibold mb-2 flex items-center gap-2 text-blue-900">
-    <i class="fas fa-pond text-blue-500"></i>
-    Detail Kolam
-  </h2>
+  <!-- ===== SECTION HEADER ===== -->
+  <div class="mb-5">
+    <div class="flex items-center gap-3">
+      <span class="w-1.5 h-8 bg-blue-500 rounded-full"></span>
+      <div>
+        <h2 class="text-xl font-bold text-gray-800">
+          Detail Kolam
+        </h2>
+      </div>
+    </div>
+  </div>
 
-  <div class="overflow-x-auto">
-    <table class="w-full md:min-w-[700px] table-auto border-collapse border text-center bg-white shadow rounded-lg overflow-hidden">
-      <thead class="bg-blue-100 text-blue-700 font-semibold">
+  <div class="overflow-x-auto rounded-2xl shadow-lg ring-1 ring-black/5 bg-white">
+    <table class="w-full md:min-w-[700px] table-auto text-sm text-gray-700">
+      
+      <!-- HEADER -->
+      <thead class="bg-gradient-to-r from-blue-600 to-blue-500 text-white">
         <tr>
-          <th class="border px-3 py-2"><i class="fas fa-water"></i> Nama Kolam</th>
-          <th class="border px-3 py-2"><i class="fas fa-calendar-alt"></i> Tanggal Tebar</th>
-          <th class="border px-3 py-2"><i class="fas fa-clock"></i> Umur</th>
-          <th class="border px-3 py-2"><i class="fas fa-ruler"></i> Ukuran Bibit</th>
-          <th class="border px-3 py-2"><i class="fas fa-sort-numeric-up"></i> Jumlah Bibit</th>
-          <th class="border px-3 py-2"><i class="fas fa-dollar-sign"></i> Harga Bibit</th>
-          <th class="border px-3 py-2"><i class="fas fa-check-circle"></i> Status</th>
+          <th class="px-4 py-3 font-semibold text-left whitespace-nowrap">
+            <i class="fas fa-water mr-1"></i> Nama Kolam
+          </th>
+          <th class="px-4 py-3 font-semibold whitespace-nowrap">
+            <i class="fas fa-calendar-alt mr-1"></i> Tanggal Tebar
+          </th>
+          <th class="px-4 py-3 font-semibold whitespace-nowrap">
+            <i class="fas fa-clock mr-1"></i> Umur
+          </th>
+          <th class="px-4 py-3 font-semibold whitespace-nowrap">
+            <i class="fas fa-ruler mr-1"></i> Ukuran Bibit
+          </th>
+          <th class="px-4 py-3 font-semibold whitespace-nowrap">
+            <i class="fas fa-sort-numeric-up mr-1"></i> Jumlah
+          </th>
+          <th class="px-4 py-3 font-semibold whitespace-nowrap">
+            <i class="fas fa-dollar-sign mr-1"></i> Harga
+          </th>
+          <th class="px-4 py-3 font-semibold whitespace-nowrap">
+            <i class="fas fa-check-circle mr-1"></i> Status
+          </th>
         </tr>
-        
       </thead>
-      <tbody class="divide-y divide-gray-200" id="kolamTableBody">
+  
+      <!-- BODY -->
+      <tbody
+        id="kolamTableBody"
+        class="divide-y divide-gray-100 bg-white"
+      >
         {% for b in bibit_entries %}
-        <tr class="hover:bg-blue-50 transition">
-          <td class="border px-2 py-1 text-left whitespace-nowrap">{{ b.nama_kolam }}</td>
-          <td class="border px-2 py-1 whitespace-nowrap">{{ b.tanggal_tebar | default('-') }}</td> <!-- baru -->
-          <td class="border px-2 py-1 whitespace-nowrap">{{ b.umur_hari ~ ' hari' if b.umur_hari is not none else '-' }}</td>
-          <td class="border px-2 py-1 whitespace-nowrap">{{ b.ukuran_bibit ~ ' cm' if b.ukuran_bibit else '-' }}</td>
-          <td class="border px-2 py-1 whitespace-nowrap">{{ "{:,}".format(b.jumlah).replace(',', '.') }}</td>
-          <td class="border px-2 py-1 whitespace-nowrap">Rp {{ "{:,}".format(b.harga|int).replace(',', '.') }}</td>
-          <td class="border px-2 py-1 whitespace-nowrap">
-            {% if b.status == 'sudah' %}
-            <span class="text-green-600 font-semibold"><i class="fas fa-check-circle"></i> Sudah Panen</span>
-        {% else %}
-            <span class="text-red-600 font-semibold"><i class="fas fa-hourglass-half"></i> Belum Panen</span>
-        {% endif %}
-        
+        <tr
+          class="hover:bg-blue-50/70 transition-all duration-200 group"
+        >
+          <td class="px-4 py-3 font-medium text-gray-800 whitespace-nowrap">
+            {{ b.nama_kolam }}
           </td>
-          
+  
+          <td class="px-4 py-3 whitespace-nowrap">
+            {{ b.tanggal_tebar | default('-') }}
+          </td>
+  
+          <td class="px-4 py-3 whitespace-nowrap">
+            {{ b.umur_hari ~ ' hari' if b.umur_hari is not none else '-' }}
+          </td>
+  
+          <td class="px-4 py-3 whitespace-nowrap">
+            {{ b.ukuran_bibit ~ ' cm' if b.ukuran_bibit else '-' }}
+          </td>
+  
+          <td class="px-4 py-3 whitespace-nowrap font-semibold">
+            {{ "{:,}".format(b.jumlah).replace(',', '.') }}
+          </td>
+  
+          <td class="px-4 py-3 whitespace-nowrap font-semibold text-blue-600">
+            Rp {{ "{:,}".format(b.harga|int).replace(',', '.') }}
+          </td>
+  
+          <td class="px-4 py-3 whitespace-nowrap">
+            {% if b.status == 'sudah' %}
+              <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">
+                <i class="fas fa-check-circle"></i> Sudah Panen
+              </span>
+            {% else %}
+              <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">
+                <i class="fas fa-hourglass-half"></i> Belum Panen
+              </span>
+            {% endif %}
+          </td>
         </tr>
         {% endfor %}
       </tbody>
+  
     </table>
   </div>
+  
 </div>
 
 
-  <!-- Pagination Controls for Kolam -->
-  <div id="paginationControlsKolam" class="flex justify-center mt-4 space-x-2 mb-5">
-    <button id="prevBtnKolam" class="px-4 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-300" onclick="changePageKolam('prev')" disabled>
-      <i class="fas fa-arrow-left text-sm"></i>
-    </button>
-    <span id="pageInfoKolam" class="mx-2 text-sm text-gray-800 font-semibold">Page 1</span>
-    <button id="nextBtnKolam" class="px-4 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-300" onclick="changePageKolam('next')" disabled>
-      <i class="fas fa-arrow-right text-sm"></i>
-    </button>
-  </div>
+<!-- Pagination Controls Kolam (Modern) -->
+<div id="paginationControlsKolam" class="flex items-center justify-center gap-3 mt-6 mb-6">
+
+  <button
+    id="prevBtnKolam"
+    onclick="changePageKolam('prev')"
+    disabled
+    class="flex items-center justify-center w-10 h-10 rounded-full
+           bg-white border border-blue-300 text-blue-600
+           hover:bg-blue-600 hover:text-white
+           shadow-md transition-all duration-200
+           disabled:opacity-40 disabled:cursor-not-allowed">
+    <i class="fas fa-chevron-left text-xs"></i>
+  </button>
+
+  <span
+    id="pageInfoKolam"
+    class="px-4 py-1.5 rounded-full bg-blue-100 text-blue-800
+           font-semibold text-sm shadow-inner">
+    Page 1
+  </span>
+
+  <button
+    id="nextBtnKolam"
+    onclick="changePageKolam('next')"
+    disabled
+    class="flex items-center justify-center w-10 h-10 rounded-full
+           bg-white border border-blue-300 text-blue-600
+           hover:bg-blue-600 hover:text-white
+           shadow-md transition-all duration-200
+           disabled:opacity-40 disabled:cursor-not-allowed">
+    <i class="fas fa-chevron-right text-xs"></i>
+  </button>
+
+</div>
+
 </div>
 
 
@@ -120,120 +262,259 @@
   </div>
 </div>
 
-<!-- Grid berdampingan -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-  <!-- Grafik Kematian Bibit -->
+<!-- Grid berdampingan --> 
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6"> 
+
+  <!-- Grafik Kematian Bibit --> 
+  <div class="bg-white p-4 rounded-lg shadow hover:shadow-lg transition">
+    <h3 class="font-semibold mb-2 flex items-center gap-2 text-blue-900"> 
+      <i class="fas fa-skull-crossbones text-red-500"></i> Grafik Kematian 
+    </h3> 
+    <canvas id="chartKematian" class="w-full h-64"></canvas> 
+  </div> 
+
+  <!-- Grafik Bibit vs Kematian per Kolam -->
   <div class="bg-white p-4 rounded-lg shadow hover:shadow-lg transition">
     <h3 class="font-semibold mb-2 flex items-center gap-2 text-blue-900">
-      <i class="fas fa-skull-crossbones text-red-500"></i> Grafik Kematian
+      <i class="fas fa-chart-bar text-green-500"></i> Grafik Bibit vs Kematian
     </h3>
-    <canvas id="chartKematian" class="w-full h-64"></canvas>
+    <canvas id="chartBibitKematian" class="w-full h-64"></canvas>
   </div>
 
-  <!-- Grafik Rasio Pakan -->
-  <div class="bg-white p-4 rounded-lg shadow hover:shadow-lg transition">
-    <h3 class="font-semibold mb-2 flex items-center gap-2 text-blue-900">
-      <i class="fas fa-balance-scale text-green-500"></i> Rasio Pakan per Kolam
-    </h3>
-    <canvas id="chartRasioPakan" class="w-full h-64"></canvas>
-  </div>
 </div>
+
 
 
 
 <!-- Chart.js Script -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  // ----- Data tambahan per kolam -----
-  const extraDataBibit = [
+  // ----- Grafik Bibit vs Kematian per Kolam (Line Chart, tiap garis per kolam) -----
+  const ctxBibitKematian = document.getElementById('chartBibitKematian').getContext('2d');
+  
+  // Data lengkap
+  const extraDataBibitFull = [
     {% for b in bibit_entries %}
       {
+        nama_kolam: '{{ b.nama_kolam }}',
         umur_hari: {{ b.umur_hari or 0 }},
         jumlah: {{ b.jumlah }},
         ukuran_bibit: '{{ b.ukuran_bibit }}',
-        tanggal_tebar: '{{ b.tanggal_tebar }}'
+        tanggal_tebar: '{{ b.tanggal_tebar }}',
+        kematian: {{ b.kematian or 0 }}
       },
     {% endfor %}
   ];
   
-  // ----- Grafik Pertumbuhan Bibit -----
-  const ctxPertumbuhan = document.getElementById('chartPertumbuhan').getContext('2d');
+  // Filter kolam kosong
+  const filteredData = extraDataBibitFull.filter(b => (b.jumlah || 0) > 0 || (b.kematian || 0) > 0);
+  
+  // Generate dataset tiap kolam
+  const colors = [
+    'rgba(54, 162, 235, 1)',
+    'rgba(255, 99, 132, 1)',
+    'rgba(255, 159, 64, 1)',
+    'rgba(75, 192, 192, 1)',
+    'rgba(153, 102, 255, 1)',
+    'rgba(201, 203, 207, 1)'
+  ];
+  
+  const datasets = filteredData.map((b, i) => ({
+    label: b.nama_kolam,
+    data: [b.jumlah, b.kematian], // titik pertama = jumlah, titik kedua = kematian
+    borderColor: colors[i % colors.length],
+    backgroundColor: colors[i % colors.length].replace('1', '0.2'),
+    fill: false,
+    tension: 0.3,
+    pointRadius: 5,
+    pointHoverRadius: 7
+  }));
+  
+  // X axis label
+  const labelsBibitKematian = ['Jumlah Bibit', 'Kematian'];
+  
+  new Chart(ctxBibitKematian, {
+    type: 'line',
+    data: {
+      labels: labelsBibitKematian,
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const val = context.raw;
+              const kolam = context.dataset.label;
+              return `${kolam}: ${val} ekor`;
+            }
+          }
+        }
+      },
+      scales: {
+        y: { beginAtZero: true },
+        x: { beginAtZero: true }
+      }
+    }
+  });
+  
+  
+  // ----- Data tambahan per kolam -----
+const extraDataBibit = [
+  {% for b in bibit_entries %}
+    {
+      umur_hari: {{ b.umur_hari or 0 }},
+      jumlah: {{ b.jumlah }},
+      ukuran_bibit: '{{ b.ukuran_bibit }}',
+      tanggal_tebar: '{{ b.tanggal_tebar }}'
+    },
+  {% endfor %}
+];
+
+// ----- Grafik Pertumbuhan Bibit -----
+const ctxPertumbuhan = document.getElementById('chartPertumbuhan').getContext('2d');
+
 const labelsPertumbuhan = [
   {% for b in bibit_entries %}
     '{{ b.tanggal_tebar }} - {{ b.nama_kolam }}',
   {% endfor %}
 ];
 
-  const dataPertumbuhan = [
-    {% for b in bibit_entries %}
-      {{ b.jumlah }},
-    {% endfor %}
-  ];
-  new Chart(ctxPertumbuhan, {
-    type: 'bar',
-    data: {
-      labels: labelsPertumbuhan,
-      datasets: [{
-        label: 'Jumlah Bibit',
-        data: dataPertumbuhan,
-        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              const i = context.dataIndex;
-              const data = extraDataBibit[i];
-              return [
-                `Jumlah Bibit: ${context.raw} ekor`,
-                `Ukuran Bibit: ${data.ukuran_bibit} cm`,
-                `Umur: ${data.umur_hari} hari`,
-                `Tgl Tebar: ${data.tanggal_tebar}`
-              ];
-            }
+const dataPertumbuhan = [
+  {% for b in bibit_entries %}
+    {{ b.jumlah }},
+  {% endfor %}
+];
+
+// Generate warna unik per kolam
+const barColors = [
+  'rgba(54, 162, 235, 0.6)',
+  'rgba(255, 99, 132, 0.6)',
+  'rgba(255, 159, 64, 0.6)',
+  'rgba(255, 205, 86, 0.6)',
+  'rgba(75, 192, 192, 0.6)',
+  'rgba(153, 102, 255, 0.6)',
+  'rgba(201, 203, 207, 0.6)',
+  'rgba(99, 255, 132, 0.6)',
+  'rgba(255, 99, 255, 0.6)',
+  'rgba(255, 159, 203, 0.6)'
+];
+
+const borderColors = barColors.map(c => c.replace('0.6','1')); // border lebih solid
+
+new Chart(ctxPertumbuhan, {
+  type: 'bar',
+  data: {
+    labels: labelsPertumbuhan,
+    datasets: [{
+      label: 'Jumlah Bibit',
+      data: dataPertumbuhan,
+      backgroundColor: barColors.slice(0, labelsPertumbuhan.length), // warna unik tiap kolam
+      borderColor: borderColors.slice(0, labelsPertumbuhan.length),
+      borderWidth: 1
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const i = context.dataIndex;
+            const data = extraDataBibit[i];
+            return [
+              `Jumlah Bibit: ${context.raw} ekor`,
+              `Ukuran Bibit: ${data.ukuran_bibit} cm`,
+              `Umur: ${data.umur_hari} hari`,
+              `Tgl Tebar: ${data.tanggal_tebar}`
+            ];
           }
         }
-      },
-      scales: { y: { beginAtZero: true } }
-    }
-  });
+      }
+    },
+    scales: { y: { beginAtZero: true } }
+  }
+});
+
   
-  // ----- Grafik Kematian Bibit -----
+  // ----- Grafik Kematian Bibit (Doughnut) -----
   const ctxKematian = document.getElementById('chartKematian').getContext('2d');
-  const labelsKematian = labelsPertumbuhan;
+  
+  const labelsKematian = [
+    {% for b in bibit_entries %}
+      '{{ b.nama_kolam }}',
+    {% endfor %}
+  ];
+  
   const dataKematian = [
     {% for b in bibit_entries %}
       {{ b.kematian or 0 }},
     {% endfor %}
   ];
+  
+  // Warna unik untuk tiap kolam
+  const backgroundColors = [
+    'rgba(255, 99, 132, 0.6)',
+    'rgba(255, 159, 64, 0.6)',
+    'rgba(255, 205, 86, 0.6)',
+    'rgba(75, 192, 192, 0.6)',
+    'rgba(54, 162, 235, 0.6)',
+    'rgba(153, 102, 255, 0.6)',
+    'rgba(201, 203, 207, 0.6)',
+    'rgba(255, 99, 255, 0.6)',
+    'rgba(99, 255, 132, 0.6)',
+    'rgba(255, 159, 203, 0.6)'
+  ];
+  
+  // Plugin custom untuk label di tiap slice
+  const sliceLabelPlugin = {
+    id: 'sliceLabelPlugin',
+    afterDatasetsDraw(chart) {
+      const { ctx } = chart;
+      chart.data.datasets.forEach((dataset, i) => {
+        const meta = chart.getDatasetMeta(i);
+        meta.data.forEach((arc, index) => {
+          const data = dataset.data[index];
+          const position = arc.tooltipPosition(); // posisi di tengah slice
+  
+          ctx.save();
+          ctx.fillStyle = 'white';
+          ctx.font = 'bold 14px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(`${data} ekor`, position.x, position.y);
+          ctx.restore();
+        });
+      });
+    }
+  };
+  
   new Chart(ctxKematian, {
-    type: 'bar',
+    type: 'doughnut',
     data: {
       labels: labelsKematian,
       datasets: [{
         label: 'Jumlah Kematian',
         data: dataKematian,
-        backgroundColor: 'rgba(255, 99, 132, 0.6)',
-        borderColor: 'rgba(255, 99, 132, 1)',
-        borderWidth: 1
+        backgroundColor: backgroundColors, // tiap kolam beda warna
+        borderColor: 'rgba(255,255,255,1)',
+        borderWidth: 2
       }]
     },
     options: {
       responsive: true,
       plugins: {
-        legend: { display: false },
+        legend: { position: 'bottom' },
         tooltip: {
           callbacks: {
             label: function(context) {
               const i = context.dataIndex;
               const data = extraDataBibit[i];
               return [
+                `Kolam: ${context.label}`,
                 `Kematian: ${context.raw} ekor`,
                 `Jumlah Bibit: ${data.jumlah} ekor`,
                 `Ukuran Bibit: ${data.ukuran_bibit} cm`,
@@ -243,10 +524,12 @@ const labelsPertumbuhan = [
             }
           }
         }
-      },
-      scales: { y: { beginAtZero: true } }
-    }
+      }
+    },
+    plugins: [sliceLabelPlugin]
   });
+  
+  
   
   // ----- Grafik Pengeluaran -----
   const ctxPengeluaran = document.getElementById('chartPengeluaran').getContext('2d');
@@ -303,45 +586,7 @@ const labelsPertumbuhan = [
     }
   });
 
-  const ctxRasioPakan = document.getElementById('chartRasioPakan').getContext('2d');
-  const labelsRasioPakan = [
-    {% for b in bibit_entries %}
-      '{{ b.nama_kolam }}',
-    {% endfor %}
-  ];
-  const dataRasioPakan = [
-    {% for b in bibit_entries %}
-      {{ (b.pakan_total / b.jumlah * 1000)|round(2) if b.jumlah else 0 }},
-    {% endfor %}
-  ];
-  
-  new Chart(ctxRasioPakan, {
-    type: 'bar',
-    data: {
-      labels: labelsRasioPakan,
-      datasets: [{
-        label: 'Rasio Pakan (g/1000 ekor)',
-        data: dataRasioPakan,
-        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              return `Rasio Pakan: ${context.raw} g/1000 ekor`;
-            }
-          }
-        }
-      },
-      scales: { y: { beginAtZero: true } }
-    }
-  });
+
   </script>
 
   

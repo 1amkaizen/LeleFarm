@@ -37,6 +37,7 @@ async def bibit_page(request: Request):
 
     total_bibit = sum(int(b.get("jumlah", 0)) for b in bibit_list)
     total_berat = sum(float(b.get("total_berat", 0)) for b in bibit_list)
+    total_harga = sum(float(b.get("total_harga", 0)) for b in bibit_list)
 
     # List ukuran bibit untuk mapping di template
     ukuran_list = [
@@ -60,6 +61,7 @@ async def bibit_page(request: Request):
             "total_bibit": total_bibit,
             "total_berat": total_berat,
             "ukuran_list": ukuran_list,  # <-- kirim ke template
+            "total_harga": total_harga,
         },
     )
 
@@ -67,13 +69,13 @@ async def bibit_page(request: Request):
 @router.post("/dashboard/bibit")
 async def bibit_submit(
     request: Request,
-    kolam_id: int = Form(...),
+    kolam_id: int | None = Form(None),
     ukuran_bibit: str = Form(...),
     jumlah: int = Form(...),
     total_harga: float = Form(0),
     catatan: str = Form(None),
     tanggal_tebar: str = Form(None),
-    total_berat: float = Form(0),  # Terima parameter total_berat
+    total_berat: float = Form(0),
 ):
     """Submit data bibit per user."""
     user_id = request.cookies.get("user_id")
@@ -83,6 +85,16 @@ async def bibit_submit(
 
     user_id = int(user_id)
 
+    # ===============================
+    # VALIDASI WAJIB: KOLAM HARUS ADA
+    # ===============================
+    if not kolam_id:
+        logger.warning(f"[BIBIT] Gagal submit: kolam belum dipilih user_id={user_id}")
+        return RedirectResponse(
+            "/dashboard/bibit?error=kolam_kosong",
+            status_code=303,
+        )
+
     result = await create_bibit(
         kolam_id=kolam_id,
         ukuran_bibit=ukuran_bibit,
@@ -91,13 +103,13 @@ async def bibit_submit(
         catatan=catatan,
         tanggal_tebar=tanggal_tebar,
         user_id=user_id,
-        total_berat=total_berat,  # Sertakan total_berat saat menambahkan bibit
+        total_berat=total_berat,
     )
 
     if result:
-        logger.info(f"[BIBIT] Bibit berhasil ditambahkan user_id={user_id}: {result}")
+        logger.info(f"[BIBIT] Bibit berhasil ditambahkan user_id={user_id}")
     else:
-        logger.error("[BIBIT] Gagal menambahkan data bibit")
+        logger.error(f"[BIBIT] Gagal menambahkan bibit user_id={user_id}")
 
     return RedirectResponse("/dashboard/bibit", status_code=303)
 

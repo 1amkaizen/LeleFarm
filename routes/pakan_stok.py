@@ -58,31 +58,60 @@ async def pakan_stok_page(request: Request):
     )
 
 
+# routes/dashboard/pakan_stok.py
+
+
 @router.post("/dashboard/pakan_stok/add")
 async def pakan_stok_add(request: Request):
     user_id = request.cookies.get("user_id")
     if not user_id:
+        logger.warning("Submit pakan_stok ditolak: user belum login.")
         return RedirectResponse("/login", status_code=303)
 
     user_id = int(user_id)
     form = await request.form()
+
     nama_pakan = form.get("nama_pakan")
-    jumlah_str = form.get("jumlah", "0").strip()
+    jumlah_str = (form.get("jumlah") or "0").strip()
     satuan = form.get("satuan", "g")
+
     kolam_id = form.get("kolam_id")
     kolam_id = int(kolam_id) if kolam_id else None
+
+    # ===============================
+    # VALIDASI WAJIB: KOLAM HARUS ADA
+    # ===============================
+    if not kolam_id:
+        logger.warning(
+            f"[PAKAN_STOK] Gagal submit: kolam belum dipilih user_id={user_id}"
+        )
+        return RedirectResponse(
+            "/dashboard/pakan_stok?error=kolam_kosong",
+            status_code=303,
+        )
+
     try:
         jumlah = float(jumlah_str)
     except ValueError:
         jumlah = 0
-    harga = float(form.get("harga", 0))
+
+    harga = float(form.get("harga") or 0)
     tanggal_masuk = form.get("tanggal_masuk")
 
     added = await pakan_stok.add_pakan_stok(
-        user_id, nama_pakan, jumlah, harga, kolam_id, tanggal_masuk, satuan
+        user_id=user_id,
+        nama_pakan=nama_pakan,
+        jumlah=jumlah,
+        harga=harga,
+        kolam_id=kolam_id,
+        tanggal_masuk=tanggal_masuk,
+        satuan=satuan,
     )
-    if not added:
-        logger.error(f"[USER {user_id}] Gagal tambah stok pakan {nama_pakan}")
+
+    if added:
+        logger.info(f"[USER {user_id}] Stok pakan ditambahkan: {nama_pakan}")
+    else:
+        logger.error(f"[USER {user_id}] Gagal tambah stok pakan: {nama_pakan}")
 
     return RedirectResponse("/dashboard/pakan_stok", status_code=303)
 

@@ -58,9 +58,7 @@ async def ringkasan_page(request: Request):
     # ===========================
     for k in kolam_list:
         # Ambil status langsung dari kolam dan normalisasi
-        status_raw = (
-            (k.get("status_panen") or "").strip().lower()
-        )  # 'belum' atau 'sudah'
+        status_raw = (k.get("status_panen") or "").strip().lower()  # 'belum' atau 'sudah'
         if status_raw == "belum":
             kolam_aktif += 1
             k["status_label"] = "Belum Panen"
@@ -90,6 +88,14 @@ async def ringkasan_page(request: Request):
                 "total_item": 0,
                 "total_transaksi": 0,
                 "total_harga": 0,
+            },
+            # <-- Tambahkan ini
+            "kematian": {
+                "total_ekor": sum(
+                    km.get("jumlah", 0)
+                    for km in kematian_list
+                    if km.get("kolam_id") == kolam_id
+                )
             },
         }
 
@@ -172,6 +178,22 @@ async def ringkasan_page(request: Request):
             k_data[cat]["total_item_fmt"] = fmt(k_data[cat]["total_item"])
             k_data[cat]["total_harga_fmt"] = fmt(k_data[cat]["total_harga"])
 
+
+
+    # ===========================
+    # Hitung total kematian per kolam
+    # ===========================
+    for k_id, k_data in pengeluaran_per_kolam.items():
+        total_kematian = sum(
+            km.get("jumlah", 0) for km in kematian_list if km.get("kolam_id") == k_id
+        )
+        k_data["kematian"] = {
+            "total_ekor": total_kematian,
+            "total_fmt": fmt(total_kematian)
+        }
+
+
+
     # ===========================
     # Total Global
     # ===========================
@@ -249,6 +271,28 @@ async def ringkasan_page(request: Request):
         "total_pengeluaran": total_pengeluaran_global,
         "total_pengeluaran_fmt": fmt(total_pengeluaran_global),
     }
+
+    # ===========================
+    # Hitung Total Pengeluaran Per Kolam & Format
+    # ===========================
+    for k_id, k_data in pengeluaran_per_kolam.items():
+        # Total pengeluaran
+        total_pengeluaran = (
+            k_data["operasional"]["total_harga"]
+            + k_data["bibit"]["total_harga"]
+            + k_data["pakan"]["total_harga"]
+        )
+        k_data["total_pengeluaran"] = total_pengeluaran
+        k_data["total_pengeluaran_fmt"] = fmt(total_pengeluaran)
+
+        # Total semua kategori untuk ringkasan tunggal
+        k_data["total_semua"] = total_pengeluaran
+        k_data["total_semua_fmt"] = fmt(total_pengeluaran)
+
+        # Format per kategori
+        for cat in ["operasional", "bibit", "pakan"]:
+            k_data[cat]["total_item_fmt"] = fmt(k_data[cat]["total_item"])
+            k_data[cat]["total_harga_fmt"] = fmt(k_data[cat]["total_harga"])
 
     # ===========================
     # Render Template

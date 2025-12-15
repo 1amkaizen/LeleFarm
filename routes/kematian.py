@@ -19,31 +19,29 @@ logger = logging.getLogger("router_kematian")
 templates = Jinja2Templates(directory="templates")
 
 
+# ============================================================
+# HALAMAN KEMATIAN
+# ============================================================
 @router.get("/dashboard/kematian", response_class=HTMLResponse)
 async def kematian_page(request: Request):
-    """
-    Halaman riwayat kematian, filter berdasarkan user melalui cookies.
-    """
     user_id = request.cookies.get("user_id")
     if not user_id:
-        logger.warning("Akses halaman kematian ditolak: user belum login.")
+        logger.warning("Akses kematian ditolak: user belum login")
         return RedirectResponse("/login", status_code=303)
 
     user_id = int(user_id)
 
-    # --- Ambil data kolam & kematian berdasarkan user ---
     kolam_list = [dict(k) for k in await get_all_kolam(user_id)]
     kematian_list = [dict(k) for k in await get_all_kematian(user_id)]
 
-    # Mapping kolam_id → nama
     kolam_dict = {k["id"]: k["nama_kolam"] for k in kolam_list}
 
     for k in kematian_list:
-        k["kolam_nama"] = kolam_dict.get(k["kolam_id"], f"ID {k['kolam_id']}")
+        k["nama_kolam"] = kolam_dict.get(k["kolam_id"], "-")
 
     total_kematian = sum(int(k.get("jumlah", 0)) for k in kematian_list)
 
-    logger.info(f"[USER {user_id}] Render kematian_page: {len(kematian_list)} data")
+    logger.info(f"[USER {user_id}] Render kematian_page ({len(kematian_list)} data)")
 
     return templates.TemplateResponse(
         "dashboard/kematian.html",
@@ -56,38 +54,50 @@ async def kematian_page(request: Request):
     )
 
 
+# ============================================================
+# TAMBAH KEMATIAN
+# ============================================================
 @router.post("/dashboard/kematian")
 async def kematian_submit(
     request: Request,
-    kolam_id: int = Form(...),
+    kolam_id: int | None = Form(None),
     tanggal: str = Form(...),
     jumlah: int = Form(...),
     catatan: str = Form(None),
 ):
-    """
-    Submit data kematian berbasis user_id dari cookies.
-    """
     user_id = request.cookies.get("user_id")
     if not user_id:
-        logger.warning("Submit kematian ditolak: user belum login.")
+        logger.warning("Submit kematian ditolak: user belum login")
         return RedirectResponse("/login", status_code=303)
 
     user_id = int(user_id)
 
-    logger.info(f"[USER {user_id}] Tambah kematian: kolam={kolam_id}, jumlah={jumlah}")
+    # ================= VALIDASI WAJIB: KOLAM DIPILIH =================
+    if not kolam_id:
+        logger.warning(f"[USER {user_id}] Submit kematian gagal: kolam belum dipilih")
+        return RedirectResponse(
+            "/dashboard/kematian?error=kolam_kosong",
+            status_code=303,
+        )
 
-    result = await create_kematian(
+    # ================= VALIDASI: KOLAM MILIK USER =================
+    kolam_list = await get_all_kolam(user_id)
+    kolam_ids = {k["id"] for k in kolam_list}
+    if kolam_id not in kolam_ids:
+        logger.warning(f"[USER {user_id}] Kolam_id tidak valid saat submit kematian")
+        return RedirectResponse("/dashboard/kematian", status_code=303)
+
+    logger.info(
+        f"[USER {user_id}] Tambah kematian | kolam_id={kolam_id} | jumlah={jumlah}"
+    )
+
+    await create_kematian(
         kolam_id=kolam_id,
         tanggal=tanggal,
         jumlah=jumlah,
         catatan=catatan,
         user_id=user_id,
     )
-
-    if not result:
-        logger.error(f"[USER {user_id}] Gagal tambah kematian")
-    else:
-        logger.info(f"[USER {user_id}] Kematian berhasil ditambahkan")
 
     return RedirectResponse("/dashboard/kematian", status_code=303)
 
@@ -99,21 +109,31 @@ async def kematian_submit(
 async def kematian_edit(
     request: Request,
     kematian_id: int = Form(...),
-    kolam_id: int = Form(None),
+    kolam_id: int | None = Form(None),
     tanggal: str = Form(None),
     jumlah: int = Form(None),
     catatan: str = Form(None),
 ):
-    """
-    Edit data kematian berdasarkan user_id dari cookies
-    """
     user_id = request.cookies.get("user_id")
     if not user_id:
-        logger.warning("Edit kematian ditolak: user belum login.")
+        logger.warning("Edit kematian ditolak: user belum login")
         return RedirectResponse("/login", status_code=303)
+
     user_id = int(user_id)
 
-    result = await update_kematian(
+    # ================= VALIDASI KOLAM (JIKA DIUBAH) =================
+    if kolam_id:
+        kolam_list = await get_all_kolam(user_id)
+        kolam_ids = {k["id"] for k in kolam_list}
+        if kolam_id not in kolam_ids:
+            logger.warning(f"[USER {user_id}] Kolam_id tidak valid saat edit kematian")
+            return RedirectResponse("/dashboard/kematian", status_code=303)
+    else:
+        kolam_id = None
+
+    logger.info(f"[USER {user_id}] Edit kematian_id={kematian_id}, kolam_id={kolam_id}")
+
+    await update_kematian(
         kematian_id=kematian_id,
         user_id=user_id,
         kolam_id=kolam_id,
@@ -122,11 +142,6 @@ async def kematian_edit(
         catatan=catatan,
     )
 
-    if result:
-        logger.info(f"[USER {user_id}] Kematian_id={kematian_id} berhasil diupdate")
-    else:
-        logger.error(f"[USER {user_id}] Gagal update kematian_id={kematian_id}")
-
     return RedirectResponse("/dashboard/kematian", status_code=303)
 
 
@@ -134,21 +149,22 @@ async def kematian_edit(
 # DELETE KEMATIAN
 # ============================================================
 @router.post("/dashboard/kematian/delete")
-async def kematian_delete(request: Request, kematian_id: int = Form(...)):
-    """
-    Hapus data kematian berdasarkan user_id dari cookies
-    """
+async def kematian_delete(
+    request: Request,
+    kematian_id: int = Form(...),
+):
     user_id = request.cookies.get("user_id")
     if not user_id:
-        logger.warning("Hapus kematian ditolak: user belum login.")
+        logger.warning("Hapus kematian ditolak: user belum login")
         return RedirectResponse("/login", status_code=303)
+
     user_id = int(user_id)
 
-    success = await delete_kematian(kematian_id=kematian_id, user_id=user_id)
+    logger.info(f"[USER {user_id}] Hapus kematian_id={kematian_id}")
 
-    if success:
-        logger.info(f"[USER {user_id}] Kematian_id={kematian_id} berhasil dihapus")
-    else:
-        logger.error(f"[USER {user_id}] Gagal hapus kematian_id={kematian_id}")
+    await delete_kematian(
+        kematian_id=kematian_id,
+        user_id=user_id,
+    )
 
     return RedirectResponse("/dashboard/kematian", status_code=303)

@@ -1,64 +1,116 @@
 <!-- templates/dashboard/bibit.html -->
 {% extends "dashboard/base.html" %} {% block title %}Kelola Bibit{% endblock %}
 {% block content %}
-<!-- Breadcrumb / Page title -->
-<div class="mb-6 flex items-center gap-2 mt-5">
-  <i class="fas fa-fish text-indigo-500 text-xl"></i>
-  <div>
-    <h1 class="text-2xl font-semibold text-blue-900 leading-tight">
-      {% block page_title %}Kelola Bibit{% endblock %}
-    </h1>
-    <p class="text-sm text-blue-700 mt-0.5">
-      {% block page_subtitle %}Kelola dan pantau data bibit lele di setiap
-      kolam{% endblock %}
-    </p>
+
+
+<!-- ===== PAGE HEADER + BREADCRUMB ===== -->
+<div class="mb-8 mt-5">
+  <!-- Breadcrumb -->
+  <nav class="text-sm text-gray-500 mb-2">
+    <ol class="flex items-center space-x-2">
+      <li class="hover:text-blue-600 transition">
+        <i class="fas fa-home mr-1"></i> Dashboard
+      </li>
+      <li>/</li>
+      <li class="text-blue-700 font-semibold">
+        Bibit
+      </li>
+    </ol>
+  </nav>
+
+  <!-- Page Title -->
+  <div class="flex items-center gap-4 
+              bg-gradient-to-r from-blue-500 to-blue-600 
+              text-white p-5 rounded-2xl shadow-lg">
+    
+    <!-- Icon -->
+    <div class="bg-white/20 p-3 rounded-xl">
+      <i class="fas fa-fish text-2xl"></i>
+    </div>
+
+    <!-- Title -->
+    <div>
+      <h1 class="text-2xl font-bold leading-tight">
+        Kelola Bibit
+      </h1>
+      <p class="text-sm text-blue-100">
+        Kelola dan pantau data bibit lele di setiap
+      kolam
+      </p>
+    </div>
   </div>
 </div>
+
+
+{% if request.query_params.get("error") == "kolam_kosong" %}
+<div class="mb-4 p-3 rounded bg-red-100 border border-red-300 text-red-700">
+  ⚠️ Kolam belum dipilih atau belum ada.
+  <br />
+  Silakan buat kolam terlebih dahulu sebelum menambah bibit.
+</div>
+{% endif %}
 
 <!-- Form Tambah Bibit Baru -->
 <form
   action="/dashboard/bibit"
   method="post"
-  class="space-y-4 border bg-white p-4 rounded-lg shadow mb-6"
+  class="space-y-5 bg-white/80 backdrop-blur-xl p-6 rounded-2xl shadow-xl border border-blue-100 mb-6
+         transition-all duration-300 hover:shadow-2xl"
 >
-  <div class="relative w-full" x-data="{ open: false, selected: null }">
-    <label class="block font-medium mb-1 text-blue-900">
-      <i class="fas fa-water text-blue-500"></i> Pilih Kolam
+  <!-- Pilih Kolam (Custom Select) -->
+  <div class="relative w-full group" x-data="{ open: false, selected: null }">
+    <label class="block mb-1 font-semibold text-blue-900 flex items-center gap-2">
+      <i class="fas fa-water text-blue-500 group-focus-within:scale-110 transition"></i>
+      Pilih Kolam
     </label>
+
     <div
-      class="border rounded w-full p-2 cursor-pointer focus:ring-2 focus:ring-blue-300"
+      class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2 cursor-pointer
+             shadow-sm transition-all duration-300
+             hover:border-blue-400
+             focus:border-blue-500 focus:ring-4 focus:ring-blue-200"
       @click="open = !open"
     >
       <span x-text="selected ? selected.nama : 'Pilih kolam...'"></span>
-      <i class="fas fa-chevron-down float-right"></i>
+      <i class="fas fa-chevron-down float-right mt-1 text-gray-500 transition-transform"
+         :class="open && 'rotate-180'"></i>
     </div>
+
     <ul
       x-show="open"
+      x-transition
       @click.outside="open = false"
-      class="absolute left-0 w-full bg-white border rounded mt-1 max-h-48 overflow-auto z-50 shadow"
+      class="absolute left-0 w-full mt-2 bg-white rounded-xl border border-gray-200
+             max-h-52 overflow-auto z-50 shadow-xl"
     >
       {% for kolam in kolam_list %}
       <li
-        class="px-3 py-2 hover:bg-blue-50 cursor-pointer"
+        class="px-4 py-2 cursor-pointer transition
+               hover:bg-blue-50 hover:pl-5"
         @click="selected = {id: {{ kolam.id }}, nama: '{{ kolam.nama_kolam }}'}; open=false;"
       >
         {{ kolam.nama_kolam }}
       </li>
       {% endfor %}
     </ul>
+
     <input type="hidden" name="kolam_id" :value="selected ? selected.id : ''" />
   </div>
 
-  <!-- Input Ukuran Bibit Baru -->
-  <div>
-    <label for="ukuran_bibit" class="block font-medium text-blue-900">
-      <i class="fas fa-ruler-combined text-yellow-500"></i> Ukuran Bibit
+  <!-- Ukuran Bibit -->
+  <div class="group">
+    <label for="ukuran_bibit" class="block mb-1 font-semibold text-blue-900 flex items-center gap-2">
+      <i class="fas fa-ruler-combined text-yellow-500 group-focus-within:scale-110 transition"></i>
+      Ukuran Bibit
     </label>
     <select
       name="ukuran_bibit"
       id="ukuran_bibit"
-      class="border p-2 rounded w-full focus:ring-2 focus:ring-blue-300"
       required
+      class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2
+             shadow-sm transition-all duration-300
+             focus:border-yellow-500 focus:ring-4 focus:ring-yellow-200 focus:outline-none
+             hover:border-yellow-400"
     >
       <option value="" disabled selected>Pilih ukuran...</option>
       {% for ukuran in ukuran_list %}
@@ -67,79 +119,111 @@
     </select>
   </div>
 
-  <div>
-    <label for="jumlah" class="block font-medium text-blue-900">
-      <i class="fas fa-sort-numeric-up text-green-500"></i> Jumlah Bibit
+  <!-- Jumlah Bibit -->
+  <div class="group">
+    <label for="jumlah" class="block mb-1 font-semibold text-blue-900 flex items-center gap-2">
+      <i class="fas fa-sort-numeric-up text-green-500 group-focus-within:scale-110 transition"></i>
+      Jumlah Bibit
     </label>
     <input
       type="text"
       name="jumlah"
       id="jumlah"
       inputmode="numeric"
-      class="border p-2 rounded w-full focus:ring-2 focus:ring-blue-300"
       placeholder="Jumlah ekor"
       required
+      class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2
+             shadow-sm transition-all duration-300
+             focus:border-green-500 focus:ring-4 focus:ring-green-200 focus:outline-none
+             hover:border-green-400"
     />
   </div>
 
-  <div>
-    <label for="total_berat" class="block font-medium text-blue-900">
-      <i class="fas fa-weight-hanging text-yellow-500"></i> Total Berat (kg)
+  <!-- Total Berat -->
+  <div class="group">
+    <label for="total_berat" class="block mb-1 font-semibold text-blue-900 flex items-center gap-2">
+      <i class="fas fa-weight-hanging text-yellow-500 group-focus-within:scale-110 transition"></i>
+      Total Berat (kg)
     </label>
     <input
       type="text"
       name="total_berat"
       id="total_berat"
       inputmode="decimal"
-      class="border p-2 rounded w-full focus:ring-2 focus:ring-blue-300"
-      placeholder="Total Berat (kg)"
+      placeholder="Total berat (kg)"
+      class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2
+             shadow-sm transition-all duration-300
+             focus:border-yellow-500 focus:ring-4 focus:ring-yellow-200 focus:outline-none
+             hover:border-yellow-400"
     />
   </div>
 
-  <div>
-    <label for="total_harga" class="block font-medium text-blue-900">
-      <i class="fas fa-coins text-yellow-500"></i> Total Harga (optional)
+  <!-- Total Harga -->
+  <div class="group">
+    <label for="total_harga" class="block mb-1 font-semibold text-blue-900 flex items-center gap-2">
+      <i class="fas fa-coins text-yellow-500 group-focus-within:scale-110 transition"></i>
+      Total Harga (optional)
     </label>
     <input
       type="text"
       name="total_harga"
       id="total_harga"
       inputmode="numeric"
-      class="border p-2 rounded w-full focus:ring-2 focus:ring-blue-300"
       placeholder="0"
+      class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2
+             shadow-sm transition-all duration-300
+             focus:border-yellow-500 focus:ring-4 focus:ring-yellow-200 focus:outline-none
+             hover:border-yellow-400"
     />
   </div>
 
-  <div>
-    <label for="tanggal_tebar" class="block font-medium text-blue-900">
-      <i class="fas fa-calendar-alt text-indigo-500"></i> Tanggal Tebar
-      (optional)
+  <!-- Tanggal Tebar -->
+  <div class="group">
+    <label for="tanggal_tebar" class="block mb-1 font-semibold text-blue-900 flex items-center gap-2">
+      <i class="fas fa-calendar-alt text-indigo-500 group-focus-within:scale-110 transition"></i>
+      Tanggal Tebar (optional)
     </label>
     <input
       type="date"
       name="tanggal_tebar"
       id="tanggal_tebar"
-      class="border p-2 rounded w-full focus:ring-2 focus:ring-blue-300"
+      class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2
+             shadow-sm transition-all duration-300
+             focus:border-indigo-500 focus:ring-4 focus:ring-indigo-200 focus:outline-none
+             hover:border-indigo-400"
     />
   </div>
 
-  <div>
-    <label for="catatan" class="block font-medium text-blue-900">
-      <i class="fas fa-sticky-note text-gray-500"></i> Catatan (optional)
+  <!-- Catatan -->
+  <div class="group">
+    <label for="catatan" class="block mb-1 font-semibold text-blue-900 flex items-center gap-2">
+      <i class="fas fa-sticky-note text-gray-500 group-focus-within:scale-110 transition"></i>
+      Catatan (optional)
     </label>
     <textarea
       name="catatan"
       id="catatan"
-      class="border p-2 rounded w-full focus:ring-2 focus:ring-blue-300"
-      rows="2"
+      rows="3"
+      class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2 resize-none
+             shadow-sm transition-all duration-300
+             focus:border-gray-500 focus:ring-4 focus:ring-gray-200 focus:outline-none
+             hover:border-gray-400"
     ></textarea>
   </div>
 
+  <!-- Button -->
   <button
     type="submit"
-    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 transition"
+    class="w-full md:w-auto mt-3 px-6 py-3 rounded-xl font-semibold text-white
+           bg-gradient-to-r from-blue-500 to-indigo-600
+           shadow-lg transition-all duration-300
+           hover:from-blue-600 hover:to-indigo-700
+           hover:shadow-2xl hover:-translate-y-0.5
+           active:translate-y-0
+           flex items-center justify-center gap-2"
   >
-    <i class="fas fa-plus-circle"></i> Tambah Bibit
+    <i class="fas fa-plus-circle"></i>
+    Tambah Bibit
   </button>
 </form>
 
@@ -149,110 +233,165 @@
   <i class="fas fa-list text-indigo-500"></i> Daftar Bibit
 </h2>
 
-<div class="overflow-x-auto mb-5">
+
+<!-- Filter Per Kolam -->
+<div class="mb-4">
+  <label class="font-semibold text-blue-900 mr-2">Filter Kolam:</label>
+  <select id="filterKolam" class="border rounded px-3 py-2 focus:ring-2 focus:ring-blue-300">
+    <option value="all">Semua Kolam</option>
+    {% for kolam in kolam_list %}
+    <option value="{{ kolam.id }}">{{ kolam.nama_kolam }}</option>
+    {% endfor %}
+  </select>
+</div>
+
+<div class="overflow-x-auto mb-5 rounded-2xl shadow-lg ring-1 ring-black/5 bg-white">
   <table
-    class="table-auto w-full md:min-w-[900px] border-collapse border bg-white shadow rounded-lg overflow-hidden"
+    class="table-auto w-full md:min-w-[900px] text-sm text-gray-700"
   >
-    <thead class="bg-blue-100 text-blue-700 text-center font-semibold">
+
+    <!-- HEADER -->
+    <thead class="bg-gradient-to-r from-blue-600 to-blue-500 text-white text-center">
       <tr>
-        <th class="border px-2 py-1 whitespace-nowrap">ID</th>
-        <th class="border px-2 py-1 whitespace-nowrap">
-          <i class="fas fa-water"></i> Kolam
+        <th class="px-4 py-3 font-semibold whitespace-nowrap">ID</th>
+        <th class="px-4 py-3 font-semibold whitespace-nowrap">
+          <i class="fas fa-water mr-1"></i> Kolam
         </th>
-        <th class="border px-2 py-1 whitespace-nowrap">
-          <i class="fas fa-calendar-alt"></i> Tanggal Tebar
+        <th class="px-4 py-3 font-semibold whitespace-nowrap">
+          <i class="fas fa-calendar-alt mr-1"></i> Tanggal Tebar
         </th>
-        <th class="border px-2 py-1 whitespace-nowrap">
-          <i class="fas fa-ruler-combined"></i> Ukuran
+        <th class="px-4 py-3 font-semibold whitespace-nowrap">
+          <i class="fas fa-ruler-combined mr-1"></i> Ukuran
         </th>
-        <th class="border px-2 py-1 whitespace-nowrap">
-          <i class="fas fa-sort-numeric-up"></i> Jumlah
+        <th class="px-4 py-3 font-semibold whitespace-nowrap">
+          <i class="fas fa-sort-numeric-up mr-1"></i> Jumlah
         </th>
-        <th class="border px-2 py-1 whitespace-nowrap">
-          <i class="fas fa-weight-hanging"></i> Total Berat (kg)
+        <th class="px-4 py-3 font-semibold whitespace-nowrap">
+          <i class="fas fa-weight-hanging mr-1"></i> Total Berat (kg)
         </th>
-        <th class="border px-2 py-1 whitespace-nowrap">
-          <i class="fas fa-coins"></i> Total Harga
+        <th class="px-4 py-3 font-semibold whitespace-nowrap">
+          <i class="fas fa-coins mr-1"></i> Total Harga
         </th>
-        <th class="border px-2 py-1 whitespace-nowrap">
-          <i class="fas fa-sticky-note"></i> Catatan
+        <th class="px-4 py-3 font-semibold whitespace-nowrap">
+          <i class="fas fa-sticky-note mr-1"></i> Catatan
         </th>
-        <th class="border px-2 py-1 whitespace-nowrap">
-          <i class="fas fa-cogs"></i> Aksi
+        <th class="px-4 py-3 font-semibold whitespace-nowrap text-center">
+          <i class="fas fa-cogs mr-1"></i> Aksi
         </th>
       </tr>
     </thead>
-    <tbody class="text-center divide-y divide-gray-200">
+
+    <!-- BODY -->
+    <tbody class="text-center divide-y divide-gray-100 bg-white">
       {% for bibit in bibit_list %}
-      <tr class="hover:bg-blue-50 transition">
-        <td class="border px-2 py-1 whitespace-nowrap">{{ bibit.id }}</td>
-        <td class="border px-2 py-1 whitespace-nowrap">
+      <tr class="hover:bg-blue-50/70 transition-all duration-200" data-kolam-id="{{ bibit.kolam_id }}">
+
+        <td class="px-4 py-3 whitespace-nowrap font-medium">
+          {{ bibit.id }}
+        </td>
+
+        <td class="px-4 py-3 whitespace-nowrap font-semibold text-gray-800">
           {{ bibit.nama_kolam }}
         </td>
-        <td class="border px-2 py-1 whitespace-nowrap">
+
+        <td class="px-4 py-3 whitespace-nowrap">
           {{ bibit.tanggal_tebar or '-' }}
         </td>
-        <td class="border px-2 py-1 whitespace-nowrap">
+
+        <td class="px-4 py-3 whitespace-nowrap">
           {{ bibit.ukuran_bibit }}
         </td>
-        <td class="border px-2 py-1 whitespace-nowrap">
-          {{ "{:,}".format(bibit.jumlah).replace(',', '.') }}
+
+        <td class="px-4 py-3 whitespace-nowrap font-semibold">
+          {{ "{:,}".format(bibit.jumlah).replace(',', '.') }} ekor
         </td>
-        <td class="border px-2 py-1 whitespace-nowrap">
-          {{ "{:,}".format(bibit.total_berat or 0).split('.')[0].replace(',',
-          '.') }}
+
+        <td class="px-4 py-3 whitespace-nowrap">
+          {{ "{:,}".format(bibit.total_berat or 0).split('.')[0].replace(',', '.') }} kg
         </td>
-        <td class="border px-2 py-1 whitespace-nowrap">
+
+        <td class="px-4 py-3 whitespace-nowrap font-semibold text-blue-600">
           Rp {{ "{:,.0f}".format(bibit.total_harga or 0).replace(',', '.') }}
         </td>
-        <td class="border px-2 py-1 whitespace-nowrap">
+
+        <td class="px-4 py-3 whitespace-nowrap text-gray-600 max-w-xs truncate">
           {{ bibit.catatan or '-' }}
         </td>
-        <td class="border px-2 py-1 whitespace-nowrap">
-          <div class="flex flex-wrap justify-center gap-1">
+
+        <!-- AKSI -->
+        <td class="px-4 py-3 whitespace-nowrap">
+          <div class="flex flex-nowrap items-center justify-center gap-2">
+
+            <!-- Tombol Edit -->
             <button
-              class="bg-yellow-400 hover:bg-yellow-500 text-white text-sm md:text-base px-2 py-1 md:px-3 md:py-1.5 rounded flex items-center gap-1 transition"
-              onclick="openEditModal({{ bibit.id }}, {{ bibit.kolam_id }}, '{{ bibit.ukuran_bibit }}', {{ bibit.jumlah }}, {{ bibit.total_harga }}, '{{ bibit.tanggal_tebar or '' }}', '{{ bibit.catatan or '' }}', {{ bibit.total_berat }})"
+              class="inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white transition
+                     bg-yellow-400 hover:bg-yellow-500"
+              onclick="BibitTable.openEditModal({{ bibit.id }}, {{ bibit.kolam_id }}, '{{ bibit.ukuran_bibit }}', {{ bibit.jumlah }}, {{ bibit.total_harga }}, '{{ bibit.tanggal_tebar or '' }}', '{{ bibit.catatan or '' }}', {{ bibit.total_berat }})"
             >
               <i class="fas fa-edit"></i>
             </button>
+
+            <!-- Tombol Delete -->
             <button
               type="button"
-              class="bg-red-500 hover:bg-red-600 text-white text-sm md:text-base px-2 py-1 md:px-3 md:py-1.5 rounded flex items-center gap-1 transition"
-              onclick="openDeleteModal({{ bibit.id }})"
+              class="inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white transition
+                     bg-red-500 hover:bg-red-600"
+              onclick="BibitTable.openDeleteModal({{ bibit.id }})"
             >
               <i class="fas fa-trash-alt"></i>
             </button>
+
           </div>
         </td>
       </tr>
       {% endfor %}
-      <tr class="font-semibold bg-blue-100">
-        <td class="border px-2 py-1 whitespace-nowrap" colspan="1">
-          <i class="fas fa-weight-hanging text-yellow-500"></i> Total
-        </td>
-        <td class="border px-2 py-1 whitespace-nowrap" colspan="1">
-          {{ "{:,}".format(total_bibit).replace(',', '.') }} ekor
-        </td>
-        <td class="border px-2 py-1 whitespace-nowrap" colspan="1">
-          {{ "{:,.2f}".format(total_berat).replace(',', '.') }} kg
-        </td>
-        <td class="border px-2 py-1 whitespace-nowrap" colspan="5"></td>
-      </tr>
+
+
     </tbody>
+<tfoot class="bg-blue-50 font-semibold text-center">
+  <tr>
+    <td class="px-4 py-3 text-left" colspan="4">
+      <i class="fas fa-weight-hanging text-yellow-500 mr-1"></i> Total
+    </td>
+    <td class="px-4 py-3">
+      {{ "{:,}".format(total_bibit).replace(',', '.') }} ekor
+    </td>
+    <td class="px-4 py-3">
+      {{ "{:,.0f}".format(total_berat|int).replace(',', '.') }} kg
+    </td>
+    <td class="px-4 py-3">
+      Rp {{ "{:,.0f}".format(total_harga|int).replace(',', '.') }}
+    </td>
+    <td class="px-4 py-3"></td>
+    <td class="px-4 py-3"></td>
+  </tr>
+</tfoot>
+
+    
   </table>
 </div>
 
+
 <!-- Pagination Controls -->
-<div id="paginationControls" class="flex justify-center mt-4 space-x-2 mb-5">
-  <button id="prevBtn" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-300" onclick="changePage('prev')" disabled>
-    <i class="fas fa-arrow-left"></i>
+<div id="paginationControls" class="flex items-center justify-center gap-3 mt-6 mb-6">
+
+  <button id="prevBtn" onclick="BibitTable.changePage('prev')" disabled>
+    <i class="fas fa-chevron-left text-sm"></i>
   </button>
-  <span id="pageInfo" class="mx-4 text-lg text-gray-800 font-semibold">Page 1</span>
-  <button id="nextBtn" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-300" onclick="changePage('next')" disabled>
-    <i class="fas fa-arrow-right"></i>
+
+  <span
+    id="pageInfo"
+    class="px-5 py-2 rounded-full bg-blue-100 text-blue-800
+           font-semibold text-sm shadow-inner">
+    Page 1
+  </span>
+
+  <button id="nextBtn" onclick="BibitTable.changePage('next')" disabled>
+    <i class="fas fa-chevron-right text-sm"></i>
   </button>
+
 </div>
+
 
 
 <!-- Modal Edit Bibit -->
@@ -393,130 +532,167 @@
 </div>
 
 <script>
-  function openEditModal(
-    id,
-    kolam_id,
-    ukuran,
-    jumlah,
-    harga,
-    tanggal,
-    catatan,
-    total_berat
-  ) {
-    document.getElementById("edit_id").value = id;
-    document.getElementById("edit_kolam").value = kolam_id;
-    document.getElementById("edit_ukuran").value = ukuran;
-    document.getElementById("edit_jumlah").value = jumlah;
-    document.getElementById("edit_harga").value = harga;
-    document.getElementById("edit_tanggal").value = tanggal;
-    document.getElementById("edit_catatan").value = catatan;
-    document.getElementById("edit_berat").value = total_berat;
-    document.getElementById("editModal").classList.remove("hidden");
-  }
-  function closeEditModal() {
-    document.getElementById("editModal").classList.add("hidden");
-  }
-  function openDeleteModal(id) {
-    document.getElementById("delete_id").value = id;
-    document.getElementById("deleteModal").classList.remove("hidden");
-  }
-  function closeDeleteModal() {
-    document.getElementById("deleteModal").classList.add("hidden");
-  }
+  const BibitTable = (() => {
+    // ======== Variabel ========
+    const rowsPerPage = 5;
+    let currentPage = 1;
+    const allRows = Array.from(document.querySelectorAll('tbody tr[data-kolam-id]'));
+    let filteredRows = allRows.slice(); // awalnya semua row
+    const totalRow = document.querySelector("tfoot tr");
+    const filterSelect = document.getElementById('filterKolam');
 
-  // Set default tanggal tebar ke hari ini saat halaman load
-  document.addEventListener("DOMContentLoaded", () => {
-    const tebarInput = document.getElementById("tanggal_tebar");
-    if (tebarInput && !tebarInput.value) {
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, "0");
-      const dd = String(today.getDate()).padStart(2, "0");
-      tebarInput.value = `${yyyy}-${mm}-${dd}`;
+    // ======== Modal ========
+    function openEditModal(id, kolam_id, ukuran, jumlah, harga, tanggal, catatan, total_berat) {
+      document.getElementById("edit_id").value = id;
+      document.getElementById("edit_kolam").value = kolam_id;
+      document.getElementById("edit_ukuran").value = ukuran;
+      document.getElementById("edit_jumlah").value = jumlah;
+      document.getElementById("edit_harga").value = harga;
+      document.getElementById("edit_tanggal").value = tanggal;
+      document.getElementById("edit_catatan").value = catatan;
+      document.getElementById("edit_berat").value = total_berat;
+      document.getElementById("editModal").classList.remove("hidden");
     }
-  });
 
-  // Pagination
-  const rowsPerPage = 5;
-  let currentPage = 1;
-  const bibitRows = document.querySelectorAll("table tbody tr");
-  const totalRows = bibitRows.length;
-  const totalPages = Math.ceil(totalRows / rowsPerPage);
+    function closeEditModal() {
+      document.getElementById("editModal").classList.add("hidden");
+    }
 
-  function showPage(page) {
-    const startIdx = (page - 1) * rowsPerPage;
-    const endIdx = startIdx + rowsPerPage;
-    bibitRows.forEach((row, index) => {
-      row.style.display = index >= startIdx && index < endIdx ? "" : "none";
-    });
-    document.getElementById(
-      "pageInfo"
-    ).innerText = `Page ${page} of ${totalPages}`;
-    document.getElementById("prevBtn").disabled = page === 1;
-    document.getElementById("nextBtn").disabled = page === totalPages;
-  }
-  function changePage(direction) {
-    if (direction === "prev" && currentPage > 1) currentPage--;
-    else if (direction === "next" && currentPage < totalPages) currentPage++;
-    showPage(currentPage);
-  }
-  showPage(currentPage);
-</script>
-<script>
-  function formatRibuan(value) {
-    return value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  }
+    function openDeleteModal(id) {
+      document.getElementById("delete_id").value = id;
+      document.getElementById("deleteModal").classList.remove("hidden");
+    }
 
-  function angkaMurni(value) {
-    return value.replace(/\./g, '');
-  }
+    function closeDeleteModal() {
+      document.getElementById("deleteModal").classList.add("hidden");
+    }
 
-  function handleInputRibuan(input) {
-    input.addEventListener('input', () => {
-      let value = input.value.replace(/[^0-9]/g, '');
-      input.value = value ? formatRibuan(value) : '';
-    });
-  }
+    // ======== Format Input ========
+    function formatRibuan(value) {
+      return value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
 
-  function handleInputDesimal(input) {
-    input.addEventListener('input', () => {
-      let value = input.value.replace(/[^0-9,]/g, '');
+    function angkaMurni(value) {
+      return value.replace(/\./g, '');
+    }
 
-      // Cegah koma lebih dari satu
-      const parts = value.split(',');
-      if (parts.length > 2) {
-        value = parts[0] + ',' + parts[1];
+    function handleInputRibuan(input) {
+      input.addEventListener('input', () => {
+        let value = input.value.replace(/[^0-9]/g, '');
+        input.value = value ? formatRibuan(value) : '';
+      });
+    }
+
+    function handleInputDesimal(input) {
+      input.addEventListener('input', () => {
+        let value = input.value.replace(/[^0-9,]/g, '');
+        const parts = value.split(',');
+        if (parts.length > 2) value = parts[0] + ',' + parts[1];
+        parts[0] = formatRibuan(parts[0]);
+        input.value = parts.join(',');
+      });
+    }
+
+    const form = document.querySelector('form[action="/dashboard/bibit"]');
+    const jumlahInput = document.getElementById('jumlah');
+    const beratInput = document.getElementById('total_berat');
+    const hargaInput = document.getElementById('total_harga');
+
+    handleInputRibuan(jumlahInput);
+    handleInputDesimal(beratInput);
+    handleInputRibuan(hargaInput);
+
+    form.addEventListener('submit', () => {
+      jumlahInput.value = angkaMurni(jumlahInput.value);
+      hargaInput.value = angkaMurni(hargaInput.value);
+      if (beratInput.value) {
+        beratInput.value = beratInput.value.replace(/\./g, '').replace(',', '.');
       }
-
-      // Format bagian integer
-      parts[0] = formatRibuan(parts[0]);
-
-      input.value = parts.join(',');
     });
-  }
 
-  const form = document.querySelector('form[action="/dashboard/bibit"]');
-
-  const jumlahInput = document.getElementById('jumlah');
-  const beratInput = document.getElementById('total_berat');
-  const hargaInput = document.getElementById('total_harga');
-
-  handleInputRibuan(jumlahInput);
-  handleInputDesimal(beratInput);
-  handleInputRibuan(hargaInput);
-
-  // Sebelum submit → kirim angka murni ke backend
-  form.addEventListener('submit', () => {
-    jumlahInput.value = angkaMurni(jumlahInput.value);
-    hargaInput.value = angkaMurni(hargaInput.value);
-
-    // desimal: 1.234,56 → 1234.56
-    if (beratInput.value) {
-      beratInput.value = beratInput.value
-        .replace(/\./g, '')
-        .replace(',', '.');
+    // ======== Pagination & Filter ========
+    function updateTotals() {
+      let totalBibit = 0;
+      let totalBerat = 0;
+      let totalHarga = 0; // <-- tambahin
+    
+      filteredRows.forEach(row => {
+        const jumlahText = row.children[4].innerText.replace(/\./g,'').replace(' ekor','').trim();
+        const beratText = row.children[5].innerText.replace(/\./g,'').replace(' kg','').replace(' g','').replace(',', '.').trim();
+        const hargaText = row.children[6].innerText.replace(/[^0-9]/g,'').trim(); // <-- ambil angka saja
+    
+        let jumlah = parseInt(jumlahText) || 0;
+        let berat = parseFloat(beratText) || 0;
+        let harga = parseInt(hargaText) || 0; // <-- parse harga
+    
+        totalBibit += jumlah;
+        totalBerat += berat;
+        totalHarga += harga; // <-- tambahin
+      });
+    
+      if (totalRow) {
+        // Format jumlah
+        totalRow.children[1].innerText = totalBibit.toLocaleString('id-ID') + ' ekor';
+      
+        // Format berat
+        if (totalBerat < 1) {
+          totalRow.children[2].innerText = (totalBerat * 1000).toLocaleString('id-ID') + ' g';
+        } else {
+          totalRow.children[2].innerText = totalBerat.toLocaleString('id-ID', { 
+            minimumFractionDigits: totalBerat % 1 === 0 ? 0 : 2, 
+            maximumFractionDigits: 2 
+          }) + ' kg';
+        }
+      
+        // Format total harga
+        totalRow.children[3].innerText = 'Rp ' + totalHarga.toLocaleString('id-ID');
+      }
+      
     }
-  });
+    
+    
+    function showPage(page) {
+      const startIdx = (page - 1) * rowsPerPage;
+      const endIdx = startIdx + rowsPerPage;
+
+      allRows.forEach(row => row.style.display = 'none');
+      filteredRows.forEach((row, index) => {
+        if (index >= startIdx && index < endIdx) row.style.display = '';
+      });
+
+      const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+      document.getElementById("pageInfo").innerText = `Page ${page} of ${totalPages || 1}`;
+      document.getElementById("prevBtn").disabled = page === 1;
+      document.getElementById("nextBtn").disabled = page === totalPages || totalPages === 0;
+
+      updateTotals();
+    }
+
+    function changePage(direction) {
+      if (direction === "prev" && currentPage > 1) currentPage--;
+      else if (direction === "next" && currentPage < Math.ceil(filteredRows.length / rowsPerPage)) currentPage++;
+      showPage(currentPage);
+    }
+
+    filterSelect.addEventListener('change', () => {
+      const selectedKolam = filterSelect.value;
+      filteredRows = allRows.filter(row => selectedKolam === 'all' || row.dataset.kolamId === selectedKolam);
+      currentPage = 1;
+      showPage(currentPage);
+    });
+
+    // ======== Default tanggal ========
+    document.addEventListener("DOMContentLoaded", () => {
+      const tebarInput = document.getElementById("tanggal_tebar");
+      if (tebarInput && !tebarInput.value) {
+        const today = new Date();
+        tebarInput.value = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+      }
+      showPage(currentPage);
+    });
+
+    return { openEditModal, closeEditModal, openDeleteModal, closeDeleteModal, changePage };
+  })();
 </script>
 
 {% endblock %}

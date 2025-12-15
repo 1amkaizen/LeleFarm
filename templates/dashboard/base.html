@@ -222,6 +222,15 @@
           </li>
           <li>
             <a
+              href="/dashboard/panen"
+              class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path == '/dashboard/panen' %}bg-blue-700{% endif %}"
+            >
+              <i class="fas fa-tasks text-white"></i>
+              <span>Panen</span>
+            </a>
+          </li>
+          <li>
+            <a
               href="/dashboard/prediksi"
               class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-500 {% if request.url.path.startswith('/dashboard/prediksi') %}bg-blue-700{% endif %}"
               ><i class="fas fa-robot text-white"></i>

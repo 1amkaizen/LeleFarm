@@ -3,6 +3,45 @@
 {% block title %}Stok Pakan{% endblock %}
 
 {% block content %}
+
+<!-- ===== PAGE HEADER + BREADCRUMB ===== -->
+<div class="mb-8 mt-5">
+  <!-- Breadcrumb -->
+  <nav class="text-sm text-gray-500 mb-2">
+    <ol class="flex items-center space-x-2">
+      <li class="hover:text-blue-600 transition">
+        <i class="fas fa-home mr-1"></i> Dashboard
+      </li>
+      <li>/</li>
+      <li class="text-blue-700 font-semibold">
+        Stok Pakan
+      </li>
+    </ol>
+  </nav>
+
+  <!-- Page Title -->
+  <div class="flex items-center gap-4 
+              bg-gradient-to-r from-blue-500 to-blue-600 
+              text-white p-5 rounded-2xl shadow-lg">
+    
+    <!-- Icon -->
+    <div class="bg-white/20 p-3 rounded-xl">
+      <i class="fas fa-boxes text-2xl"></i>
+    </div>
+
+    <!-- Title -->
+    <div>
+      <h1 class="text-2xl font-bold leading-tight">
+        Kelola Stok Pakan
+      </h1>
+      <p class="text-sm text-blue-100">
+        Manajemen stok pakan
+      </p>
+    </div>
+  </div>
+</div>
+
+
 <div class="mb-6 flex items-center gap-2 mt-5">
   <i class="fas fa-boxes text-yellow-500 text-xl"></i>
   <div>
@@ -15,42 +54,148 @@
   </div>
 </div>
 
+{% if request.query_params.get("error") == "kolam_kosong" %}
+<div class="mb-4 p-3 rounded bg-red-100 border border-red-300 text-red-700">
+  ⚠️ Kolam belum dipilih atau belum ada.<br />
+  Silakan buat kolam terlebih dahulu sebelum menambah stok pakan.
+</div>
+{% endif %}
+
 <!-- Form Tambah Stok Pakan -->
-<form action="/dashboard/pakan_stok/add" method="post" class="space-y-4 border bg-white p-4 rounded-lg shadow mb-6">
-  <h2 class="font-semibold mb-2 flex items-center gap-2 text-blue-900">
-    <i class="fas fa-plus-circle text-green-500"></i> Tambah Stok Pakan
+<form
+  action="/dashboard/pakan_stok/add"
+  method="post"
+  class="space-y-5 bg-white/80 backdrop-blur-xl p-6 rounded-2xl shadow-xl
+         border border-blue-100 mb-6 transition-all duration-300 hover:shadow-2xl"
+>
+
+  <h2 class="font-bold text-lg flex items-center gap-2 text-blue-900">
+    <i class="fas fa-plus-circle text-green-500"></i>
+    Tambah Stok Pakan
   </h2>
 
-  <label class="block font-medium text-blue-900"><i class="fas fa-layer-group text-indigo-500"></i> Pilih Kolam</label>
-  <select name="kolam_id" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300">
-    <option value="">-- Tidak ada kolam --</option>
-    {% for k in kolam_list %}
-      <option value="{{ k['id'] }}" {% if selected_kolam_id == k['id'] %}selected{% endif %}>{{ k['nama_kolam'] }}</option>
-    {% endfor %}
-  </select>
-  
-  <label class="block font-medium text-blue-900"><i class="fas fa-leaf text-green-500"></i> Nama Pakan</label>
-  <input type="text" name="nama_pakan" placeholder="Nama Pakan (Pelet, Cacing...)" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" required />
-
-  <label class="block font-medium text-blue-900"><i class="fas fa-weight-hanging text-yellow-500"></i> Jumlah Stok</label>
-  <div class="flex gap-2">
-    <input type="text" name="jumlah" id="stok_jumlah" inputmode="decimal" placeholder="Jumlah stok pakan" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" required />
-    <select name="satuan" class="border rounded p-2 focus:ring-2 focus:ring-blue-300">
-      <option value="g">g</option>
-      <option value="kg">kg</option>
+  <!-- Pilih Kolam -->
+  <div class="group">
+    <label class="block mb-1 font-semibold text-blue-900 flex items-center gap-2">
+      <i class="fas fa-layer-group text-indigo-500 group-focus-within:scale-110 transition"></i>
+      Pilih Kolam
+    </label>
+    <select
+      name="kolam_id"
+      class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2
+             shadow-sm transition-all duration-300
+             focus:border-indigo-500 focus:ring-4 focus:ring-indigo-200 focus:outline-none
+             hover:border-indigo-400"
+    >
+      <option value="">-- Tidak ada kolam --</option>
+      {% for k in kolam_list %}
+        <option value="{{ k['id'] }}" {% if selected_kolam_id == k['id'] %}selected{% endif %}>
+          {{ k['nama_kolam'] }}
+        </option>
+      {% endfor %}
     </select>
   </div>
 
+  <!-- Nama Pakan -->
+  <div class="group">
+    <label class="block mb-1 font-semibold text-blue-900 flex items-center gap-2">
+      <i class="fas fa-leaf text-green-500 group-focus-within:scale-110 transition"></i>
+      Nama Pakan
+    </label>
+    <input
+      type="text"
+      name="nama_pakan"
+      placeholder="Nama Pakan (Pelet, Cacing...)"
+      required
+      class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2
+             shadow-sm transition-all duration-300
+             focus:border-green-500 focus:ring-4 focus:ring-green-200 focus:outline-none
+             hover:border-green-400"
+    />
+  </div>
 
+  <!-- Jumlah Stok -->
+  <div class="group">
+    <label class="block mb-1 font-semibold text-blue-900 flex items-center gap-2">
+      <i class="fas fa-weight-hanging text-yellow-500 group-focus-within:scale-110 transition"></i>
+      Jumlah Stok
+    </label>
+    <div class="flex gap-3">
+      <input
+        type="text"
+        name="jumlah"
+        id="stok_jumlah"
+        inputmode="decimal"
+        placeholder="Jumlah stok pakan"
+        required
+        class="flex-1 rounded-xl border border-gray-300 bg-white px-4 py-2
+               shadow-sm transition-all duration-300
+               focus:border-yellow-500 focus:ring-4 focus:ring-yellow-200 focus:outline-none
+               hover:border-yellow-400"
+      />
+      <select
+        name="satuan"
+        class="rounded-xl border border-gray-300 bg-white px-3 py-2
+               shadow-sm transition-all duration-300
+               focus:border-yellow-500 focus:ring-4 focus:ring-yellow-200 focus:outline-none
+               hover:border-yellow-400"
+      >
+        <option value="g">g</option>
+        <option value="kg">kg</option>
+      </select>
+    </div>
+  </div>
 
-  <label class="block font-medium text-blue-900"><i class="fas fa-money-bill-wave text-green-500"></i> Harga Total (Rp)</label>
-  <input type="text" name="harga" id="stok_harga" inputmode="numeric" placeholder="Harga total pakan" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" required />
+  <!-- Harga Total -->
+  <div class="group">
+    <label class="block mb-1 font-semibold text-blue-900 flex items-center gap-2">
+      <i class="fas fa-money-bill-wave text-green-500 group-focus-within:scale-110 transition"></i>
+      Harga Total (Rp)
+    </label>
+    <input
+      type="text"
+      name="harga"
+      id="stok_harga"
+      inputmode="numeric"
+      placeholder="Harga total pakan"
+      required
+      class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2
+             shadow-sm transition-all duration-300
+             focus:border-green-500 focus:ring-4 focus:ring-green-200 focus:outline-none
+             hover:border-green-400"
+    />
+  </div>
 
-  <label class="block font-medium text-blue-900"><i class="fas fa-calendar-alt text-indigo-500"></i> Tanggal Masuk</label>
-  <input type="date" name="tanggal_masuk" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" required />
+  <!-- Tanggal Masuk -->
+  <div class="group">
+    <label class="block mb-1 font-semibold text-blue-900 flex items-center gap-2">
+      <i class="fas fa-calendar-alt text-indigo-500 group-focus-within:scale-110 transition"></i>
+      Tanggal Masuk
+    </label>
+    <input
+      type="date"
+      name="tanggal_masuk"
+      required
+      class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2
+             shadow-sm transition-all duration-300
+             focus:border-indigo-500 focus:ring-4 focus:ring-indigo-200 focus:outline-none
+             hover:border-indigo-400"
+    />
+  </div>
 
-  <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 transition">
-    <i class="fas fa-save"></i> Simpan Stok
+  <!-- Button -->
+  <button
+    type="submit"
+    class="w-full md:w-auto mt-3 px-6 py-3 rounded-xl font-semibold text-white
+           bg-gradient-to-r from-blue-500 to-indigo-600
+           shadow-lg transition-all duration-300
+           hover:from-blue-600 hover:to-indigo-700
+           hover:shadow-2xl hover:-translate-y-0.5
+           active:translate-y-0
+           flex items-center justify-center gap-2"
+  >
+    <i class="fas fa-save"></i>
+    Simpan Stok
   </button>
 </form>
 
@@ -59,70 +204,164 @@
 <h2 class="text-xl font-semibold mb-2 flex items-center gap-2 text-blue-900">
   <i class="fas fa-list text-indigo-500"></i> Daftar Stok Pakan
 </h2>
+<!-- Filter Per Kolam -->
+<div class="mb-4">
+  <label class="font-semibold text-blue-900 mr-2">Filter Kolam:</label>
+  <select id="filterKolam" class="border rounded px-3 py-2 focus:ring-2 focus:ring-blue-300">
+    <option value="all">Semua Kolam</option>
+    {% for kolam in kolam_list %}
+    <option value="{{ kolam.id }}">{{ kolam.nama_kolam }}</option>
+    {% endfor %}
+  </select>
+</div>
 
-<div class="overflow-x-auto mb-5">
-  <table class="table-auto w-full md:min-w-[800px] border-collapse border bg-white shadow rounded-lg overflow-hidden">
-    <thead class="bg-blue-100 text-blue-700 text-center font-semibold">
+<div class="overflow-x-auto mb-5 rounded-2xl shadow-lg ring-1 ring-black/5 bg-white">
+  <table class="table-auto w-full md:min-w-[800px] text-sm text-gray-700">
+
+    <!-- HEADER -->
+    <thead class="bg-gradient-to-r from-blue-600 to-blue-500 text-white text-center">
       <tr>
-        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-leaf"></i> Nama Pakan</th>
-        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-weight-hanging"></i> Jumlah</th>
-        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-water"></i> Kolam</th>
-        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-money-bill-wave"></i> Harga Total (Rp)</th>
-        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-calendar-alt"></i> Tanggal Masuk</th>
-        <th class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-cogs"></i> Aksi</th>
+        <th class="px-4 py-3 font-semibold whitespace-nowrap">
+          <i class="fas fa-leaf mr-1"></i> Nama Pakan
+        </th>
+        <th class="px-4 py-3 font-semibold whitespace-nowrap">
+          <i class="fas fa-weight-hanging mr-1"></i> Jumlah
+        </th>
+        <th class="px-4 py-3 font-semibold whitespace-nowrap">
+          <i class="fas fa-water mr-1"></i> Kolam
+        </th>
+        <th class="px-4 py-3 font-semibold whitespace-nowrap">
+          <i class="fas fa-money-bill-wave mr-1"></i> Harga Total (Rp)
+        </th>
+        <th class="px-4 py-3 font-semibold whitespace-nowrap">
+          <i class="fas fa-calendar-alt mr-1"></i> Tanggal Masuk
+        </th>
+        <th class="px-4 py-3 font-semibold whitespace-nowrap text-center">
+          <i class="fas fa-cogs mr-1"></i> Aksi
+        </th>
       </tr>
     </thead>
-    <tbody class="text-center divide-y divide-gray-200">
+
+    <!-- BODY -->
+    <tbody class="text-center divide-y divide-gray-100 bg-white">
       {% for p in stok_list %}
-      <tr class="hover:bg-blue-50 transition stok-row">
-        <td class="border px-2 py-1 whitespace-nowrap">{{ p["nama_pakan"] }}</td>
-        <td class="border px-2 py-1 whitespace-nowrap">
+      <tr class="stok-row hover:bg-blue-50/70 transition-all duration-200" data-kolam-id="{{ p.kolam_id }}">
+        <td class="px-4 py-3 whitespace-nowrap font-medium text-gray-800">
+          {{ p["nama_pakan"] }}
+        </td>
+
+        <td class="px-4 py-3 whitespace-nowrap">
           {{ "{:,.0f}".format(p["jumlah"])|replace(',', '.') }} {{ p["satuan"] or "g" }}
         </td>
-        <td class="border px-2 py-1 whitespace-nowrap">
+
+        <td class="px-4 py-3 whitespace-nowrap">
           {{ p["kolam_id"] and (kolam_list | selectattr('id','equalto',p["kolam_id"]) | first)['nama_kolam'] or "-" }}
         </td>
-        <td class="border px-2 py-1 whitespace-nowrap">Rp {{ "{:,.0f}".format(p["harga"])|replace(',', '.') }}</td>
-        <td class="border px-2 py-1 whitespace-nowrap">{{ p["tanggal_masuk"] or "-" }}</td>
-        <td class="border px-2 py-1 whitespace-nowrap flex justify-center gap-2">
-          <button class="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded flex items-center gap-1 text-sm"
-                  onclick="openEditModal({{ p['id'] }}, '{{ p['nama_pakan'] }}', {{ p['jumlah'] }}, '{{ p['satuan'] }}', {{ p['harga'] }}, '{{ p['tanggal_masuk'] }}', {{ p['kolam_id'] or 'null' }})">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded flex items-center gap-1 text-sm"
-                  onclick="openDeleteModal({{ p['id'] }}, '{{ p['nama_pakan'] }}')">
-            <i class="fas fa-trash"></i>
-          </button>
+
+        <td class="px-4 py-3 whitespace-nowrap font-semibold text-blue-600">
+          Rp {{ "{:,.0f}".format(p["harga"])|replace(',', '.') }}
+        </td>
+
+        <td class="px-4 py-3 whitespace-nowrap">
+          {{ p["tanggal_masuk"] or "-" }}
+        </td>
+
+        <!-- AKSI -->
+        <td class="px-4 py-3 whitespace-nowrap">
+          <div class="flex flex-nowrap items-center justify-center gap-2">
+
+            <button
+              class="inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white transition
+                     bg-yellow-400 hover:bg-yellow-500"
+              onclick="openEditModal({{ p['id'] }}, '{{ p['nama_pakan'] }}', {{ p['jumlah'] }}, '{{ p['satuan'] }}', {{ p['harga'] }}, '{{ p['tanggal_masuk'] }}', {{ p['kolam_id'] or 'null' }})"
+            >
+              <i class="fas fa-edit"></i>
+            </button>
+
+            <button
+              class="inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white transition
+                     bg-red-500 hover:bg-red-600"
+              onclick="openDeleteModal({{ p['id'] }}, '{{ p['nama_pakan'] }}')"
+            >
+              <i class="fas fa-trash"></i>
+            </button>
+
+          </div>
         </td>
       </tr>
       {% endfor %}
     </tbody>
-    <tfoot class="bg-blue-100 font-semibold text-center">
+
+    <!-- FOOTER / TOTAL -->
+    <tfoot class="bg-blue-50 font-semibold text-center">
       <tr>
-        <td class="border px-2 py-1 whitespace-nowrap"><i class="fas fa-weight-hanging text-yellow-500"></i> Total</td>
-        <td class="border px-2 py-1 whitespace-nowrap">
+        <td class="px-4 py-3 whitespace-nowrap">
+          <i class="fas fa-weight-hanging text-yellow-500 mr-1"></i> Total
+        </td>
+    
+        <!-- Total Jumlah -->
+        <td class="px-4 py-3 whitespace-nowrap">
           {% if total_jumlah_kg >= 1000 %}
-              {{ "{:,.2f}".format(total_jumlah_kg / 1000)|replace(',', '.') }} kg
+            {{ "{:,.2f}".format(total_jumlah_kg / 1000)|replace(',', '.') }} kg
           {% else %}
-              {{ "{:,.0f}".format(total_jumlah_kg)|replace(',', '.') }} g
+            {{ "{:,.0f}".format(total_jumlah_kg)|replace(',', '.') }} g
           {% endif %}
         </td>
-        <td class="border px-2 py-1 whitespace-nowrap" colspan="4"></td>
+    
+        <td class="px-4 py-3 whitespace-nowrap"></td>
+    
+        <!-- Total Harga -->
+        <td class="px-4 py-3 whitespace-nowrap font-semibold text-blue-600">
+          Rp {{ "{:,.0f}".format(total_harga) | replace(',', '.') }}
+        </td>
+    
+        <!-- Kolom kosong lainnya -->
+        <td class="px-4 py-3 whitespace-nowrap"></td>
+        <td class="px-4 py-3 whitespace-nowrap"></td>
       </tr>
     </tfoot>
+    
+
   </table>
 </div>
 
+
 <!-- Pagination Controls -->
-<div id="paginationControls" class="flex justify-center mt-4 space-x-2 mb-5">
-  <button id="prevBtn" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-300" onclick="changePage('prev')" disabled>
-    <i class="fas fa-arrow-left"></i>
+<div id="paginationControls" class="flex items-center justify-center gap-3 mt-6 mb-6">
+
+  <button
+    id="prevBtn"
+    onclick="changePage('prev')"
+    disabled
+    class="flex items-center justify-center w-11 h-11 rounded-full
+           bg-white border border-blue-300 text-blue-600
+           hover:bg-blue-600 hover:text-white
+           shadow-md transition-all duration-200
+           disabled:opacity-40 disabled:cursor-not-allowed">
+    <i class="fas fa-chevron-left text-sm"></i>
   </button>
-  <span id="pageInfo" class="mx-4 text-lg text-gray-800 font-semibold">Page 1</span>
-  <button id="nextBtn" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 disabled:bg-gray-300" onclick="changePage('next')" disabled>
-    <i class="fas fa-arrow-right"></i>
+
+  <span
+    id="pageInfo"
+    class="px-5 py-2 rounded-full bg-blue-100 text-blue-800
+           font-semibold text-sm shadow-inner">
+    Page 1
+  </span>
+
+  <button
+    id="nextBtn"
+    onclick="changePage('next')"
+    disabled
+    class="flex items-center justify-center w-11 h-11 rounded-full
+           bg-white border border-blue-300 text-blue-600
+           hover:bg-blue-600 hover:text-white
+           shadow-md transition-all duration-200
+           disabled:opacity-40 disabled:cursor-not-allowed">
+    <i class="fas fa-chevron-right text-sm"></i>
   </button>
+
 </div>
+
 
 
 <!-- Modal Edit Stok Pakan -->
@@ -172,136 +411,155 @@
   </div>
 </div>
 
-<script>
-  function openEditModal(id, nama, jumlah, satuan, harga, tanggal, kolam_id){
-    document.getElementById('edit_id').value = id;
-    document.getElementById('edit_nama').value = nama;
-    document.getElementById('edit_jumlah').value = jumlah;
-    document.getElementById('edit_satuan').value = satuan || 'g';
-    document.getElementById('edit_harga').value = harga;
-    document.getElementById('edit_tanggal').value = tanggal;
-    document.getElementById('edit_kolam').value = kolam_id || '';
-    document.getElementById('editModal').classList.remove('hidden');
-  }
-  function closeEditModal(){ document.getElementById('editModal').classList.add('hidden'); }
-</script>
+
+
+<!-- Modal Delete Stok Pakan -->
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-sm p-6 relative">
+    <h2 class="text-lg font-semibold text-red-600 mb-4">Hapus Stok Pakan</h2>
+    <p id="deleteText" class="mb-4 text-gray-700">Apakah Anda yakin ingin menghapus stok pakan ini?</p>
+    <form id="deleteForm" method="post" action="/dashboard/pakan_stok/delete">
+      <input type="hidden" name="pakan_stok_id" id="delete_id">
+      <div class="flex justify-end gap-2">
+        <button type="button" onclick="closeDeleteModal()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Batal</button>
+        <button type="submit" class="px-4 py-2 rounded bg-red-500 hover:bg-red-600 text-white">Hapus</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 
 <script>
-  // Set default tanggal masuk ke hari ini saat halaman load
-  document.addEventListener('DOMContentLoaded', () => {
-    const tanggalInput = document.querySelector('input[name="tanggal_masuk"]');
-    const editTanggal = document.getElementById('edit_tanggal');
+  const PakanStokTable = (() => {
+    const rowsPerPage = 5;
+    let currentPage = 1;
+    const allRows = Array.from(document.querySelectorAll('tbody tr[data-kolam-id]'));
+    let filteredRows = allRows.slice();
+    const totalRow = document.querySelector("tfoot tr");
+    const filterSelect = document.getElementById('filterKolam');
 
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    const todayStr = `${yyyy}-${mm}-${dd}`;
+    // ======== Modal ========
+    function openEditModal(id, nama, jumlah, satuan, harga, tanggal, kolam_id){
+      document.getElementById('edit_id').value = id;
+      document.getElementById('edit_nama').value = nama;
+      document.getElementById('edit_jumlah').value = jumlah;
+      document.getElementById('edit_satuan').value = satuan || 'g';
+      document.getElementById('edit_harga').value = harga;
+      document.getElementById('edit_tanggal').value = tanggal;
+      document.getElementById('edit_kolam').value = kolam_id || '';
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+    function closeEditModal(){ document.getElementById('editModal').classList.add('hidden'); }
 
-    if(tanggalInput && !tanggalInput.value){
-      tanggalInput.value = todayStr;
+    function openDeleteModal(id, nama){
+      document.getElementById('delete_id').value = id;
+      document.getElementById('deleteText').innerText = `Apakah Anda yakin ingin menghapus stok pakan "${nama}"?`;
+      document.getElementById('deleteModal').classList.remove('hidden');
+    }
+    function closeDeleteModal(){ document.getElementById('deleteModal').classList.add('hidden'); }
+
+    // ======== Format input ========
+    function formatRibuan(value) { return value.replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+    function angkaMurni(value) { return value.replace(/\./g, ''); }
+    function handleInputRibuan(input) {
+      input.addEventListener('input', ()=>{ let v=input.value.replace(/[^0-9]/g,''); input.value=v?formatRibuan(v):''; });
+    }
+    function handleInputDesimal(input) {
+      input.addEventListener('input', ()=>{
+        let value=input.value.replace(/[^0-9,]/g,''); 
+        const parts=value.split(','); 
+        if(parts.length>2)value=parts[0]+','+parts[1]; 
+        parts[0]=formatRibuan(parts[0]);
+        input.value=parts.join(',');
+      });
     }
 
-    if(editTanggal && !editTanggal.value){
-      editTanggal.value = todayStr;
+    const formStok = document.querySelector('form[action="/dashboard/pakan_stok/add"]');
+    const jumlahStokInput = document.getElementById('stok_jumlah');
+    const hargaStokInput = document.getElementById('stok_harga');
+    handleInputDesimal(jumlahStokInput);
+    handleInputRibuan(hargaStokInput);
+
+    if(formStok){
+      formStok.addEventListener('submit', ()=>{
+        if(jumlahStokInput.value) jumlahStokInput.value=jumlahStokInput.value.replace(/\./g,'').replace(',', '.');
+        hargaStokInput.value = angkaMurni(hargaStokInput.value);
+      });
     }
-  });
-</script>
 
-<script>
-  const rowsPerPage = 5;  // Jumlah baris per halaman
-  let currentPage = 1;
-
-  // Ambil semua baris dalam tabel
-  const stokRows = document.querySelectorAll('table tbody tr');
-  const totalRows = stokRows.length;
-  const totalPages = Math.ceil(totalRows / rowsPerPage);
-
-  // Fungsi untuk menampilkan halaman yang sesuai
-  function showPage(page) {
-    // Tentukan indeks mulai dan selesai
-    const startIdx = (page - 1) * rowsPerPage;
-    const endIdx = startIdx + rowsPerPage;
-
-    // Sembunyikan semua baris
-    stokRows.forEach((row, index) => {
-      if (index >= startIdx && index < endIdx) {
-        row.style.display = '';
-      } else {
-        row.style.display = 'none';
+    // ======== Pagination & filter & total ========
+    function updateTotals(){
+      let totalJumlah=0; 
+      let totalHarga=0;
+      
+      // Hitung semua filteredRows, bukan cuma yang tampil di halaman
+      filteredRows.forEach(row=>{
+        let [jumlahVal,satuan]=row.children[1].innerText.trim().split(' ');
+        jumlahVal=parseFloat(jumlahVal.replace(/\./g,'').replace(',', '.'))||0;
+        if(satuan==='kg') jumlahVal*=1000; 
+        totalJumlah+=jumlahVal;
+    
+        let hargaText=row.children[3].innerText.replace(/[Rp\s.]/g,'');
+        totalHarga+=parseInt(hargaText)||0;
+      });
+    
+      if(totalRow){
+        totalRow.children[1].innerText = totalJumlah >= 1000 
+          ? (totalJumlah/1000).toLocaleString('id-ID',{minimumFractionDigits:0, maximumFractionDigits:0})+' kg'
+          : totalJumlah.toLocaleString('id-ID')+' g';
+      
+        totalRow.children[3].innerText = 'Rp '+totalHarga.toLocaleString('id-ID');
       }
-    });
+      
+    }
+    
 
-    // Update informasi halaman
-    document.getElementById('pageInfo').innerText = `Page ${page} of ${totalPages}`;
-
-    // Disable previous/next buttons jika di halaman pertama/terakhir
-    document.getElementById('prevBtn').disabled = page === 1;
-    document.getElementById('nextBtn').disabled = page === totalPages;
-  }
-
-  // Fungsi untuk berpindah halaman
-  function changePage(direction) {
-    if (direction === 'prev' && currentPage > 1) {
-      currentPage--;
-    } else if (direction === 'next' && currentPage < totalPages) {
-      currentPage++;
+    function showPage(page){
+      const startIdx=(page-1)*rowsPerPage;
+      const endIdx=startIdx+rowsPerPage;
+      allRows.forEach(r=>r.style.display='none');
+      filteredRows.forEach((r,i)=>{if(i>=startIdx&&i<endIdx) r.style.display='';});
+      const totalPages=Math.ceil(filteredRows.length/rowsPerPage);
+      document.getElementById("pageInfo").innerText=`Page ${page} of ${totalPages||1}`;
+      document.getElementById("prevBtn").disabled=page===1;
+      document.getElementById("nextBtn").disabled=page===totalPages||totalPages===0;
+      updateTotals();
     }
 
-    showPage(currentPage);
-  }
-
-  // Tampilkan halaman pertama saat pertama kali load
-  showPage(currentPage);
-</script>
-<script>
-  function formatRibuan(value) {
-    return value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  }
-
-  function angkaMurni(value) {
-    return value.replace(/\./g, '');
-  }
-
-  function handleInputRibuan(input) {
-    input.addEventListener('input', () => {
-      let value = input.value.replace(/[^0-9]/g, '');
-      input.value = value ? formatRibuan(value) : '';
-    });
-  }
-
-  function handleInputDesimal(input) {
-    input.addEventListener('input', () => {
-      let value = input.value.replace(/[^0-9,]/g, '');
-
-      const parts = value.split(',');
-      if (parts.length > 2) {
-        value = parts[0] + ',' + parts[1];
-      }
-
-      parts[0] = formatRibuan(parts[0]);
-      input.value = parts.join(',');
-    });
-  }
-
-  const formStok = document.querySelector('form[action="/dashboard/pakan_stok/add"]');
-
-  const jumlahStokInput = document.getElementById('stok_jumlah');
-  const hargaStokInput = document.getElementById('stok_harga');
-
-  handleInputDesimal(jumlahStokInput); // bisa 1.000,5 kg
-  handleInputRibuan(hargaStokInput);   // rupiah
-
-  // sebelum submit → bersihkan format
-  formStok.addEventListener('submit', () => {
-    if (jumlahStokInput.value) {
-      jumlahStokInput.value = jumlahStokInput.value
-        .replace(/\./g, '')
-        .replace(',', '.');
+    function changePage(direction){
+      const totalPages=Math.ceil(filteredRows.length/rowsPerPage);
+      if(direction==='prev' && currentPage>1) currentPage--;
+      else if(direction==='next' && currentPage<totalPages) currentPage++;
+      showPage(currentPage);
     }
 
-    hargaStokInput.value = angkaMurni(hargaStokInput.value);
-  });
+    filterSelect.addEventListener('change', ()=>{
+      const selectedKolam=filterSelect.value;
+      filteredRows=allRows.filter(r=>selectedKolam==='all'||r.dataset.kolamId===selectedKolam);
+      currentPage=1;
+      showPage(currentPage);
+    });
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const today=new Date(); const yyyy=today.getFullYear(); const mm=String(today.getMonth()+1).padStart(2,'0'); const dd=String(today.getDate()).padStart(2,'0');
+      const todayStr=`${yyyy}-${mm}-${dd}`;
+      const tanggalInput=document.querySelector('input[name="tanggal_masuk"]');
+      const editTanggal=document.getElementById('edit_tanggal');
+      if(tanggalInput && !tanggalInput.value) tanggalInput.value=todayStr;
+      if(editTanggal && !editTanggal.value) editTanggal.value=todayStr;
+      showPage(currentPage);
+    });
+
+    // ======== Expose ke global ========
+    return {openEditModal, closeEditModal, openDeleteModal, closeDeleteModal, changePage};
+  })();
+
+  // ======== Bind ke window supaya onclick di HTML bisa dipakai ========
+  window.openEditModal = PakanStokTable.openEditModal;
+  window.closeEditModal = PakanStokTable.closeEditModal;
+  window.openDeleteModal = PakanStokTable.openDeleteModal;
+  window.closeDeleteModal = PakanStokTable.closeDeleteModal;
+  window.changePage = PakanStokTable.changePage;
 </script>
 
 {% endblock %}

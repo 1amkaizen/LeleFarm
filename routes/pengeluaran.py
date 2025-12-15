@@ -12,7 +12,7 @@ from services.pengeluaran import (
     update_pengeluaran,
     delete_pengeluaran,
 )
-from services.kolam import get_all_kolam  # ambil list kolam user
+from services.kolam import get_all_kolam
 
 router = APIRouter()
 logger = logging.getLogger("router_pengeluaran")
@@ -26,23 +26,29 @@ templates = Jinja2Templates(directory="templates")
 async def pengeluaran_page(request: Request):
     user_id = request.cookies.get("user_id")
     if not user_id:
-        logger.warning("Akses halaman pengeluaran ditolak: user belum login.")
+        logger.warning("Akses pengeluaran ditolak: user belum login")
         return RedirectResponse("/login", status_code=303)
 
     user_id = int(user_id)
+
     pengeluaran_list = [dict(p) for p in await get_all_pengeluaran(user_id)]
-    kolam_list = await get_all_kolam(user_id)
+    kolam_list = [dict(k) for k in await get_all_kolam(user_id)]
+
+    kolam_map = {k["id"]: k["nama_kolam"] for k in kolam_list}
 
     for p in pengeluaran_list:
         p["harga"] = float(p.get("harga", 0))
         p["jumlah"] = int(p.get("jumlah", 0))
         p["total"] = p["harga"] * p["jumlah"]
+        p["nama_kolam"] = kolam_map.get(p.get("kolam_id"), "-")
 
     grand_total = sum(p["total"] for p in pengeluaran_list)
 
     logger.info(
-        f"[USER {user_id}] Render pengeluaran_page: {len(pengeluaran_list)} item"
+        f"[USER {user_id}] Render pengeluaran_page ({len(pengeluaran_list)} data)"
     )
+
+
 
     return templates.TemplateResponse(
         "dashboard/pengeluaran.html",
@@ -50,7 +56,7 @@ async def pengeluaran_page(request: Request):
             "request": request,
             "pengeluaran_list": pengeluaran_list,
             "grand_total": grand_total,
-            "kolam_list": kolam_list,  # untuk dropdown kolam
+            "kolam_list": kolam_list,
         },
     )
 
@@ -66,19 +72,35 @@ async def pengeluaran_submit(
     jumlah: int = Form(1),
     tanggal: str = Form(...),
     catatan: str = Form(None),
-    kolam_id: int = Form(None),  # baru
+    kolam_id: int | None = Form(None),
 ):
     user_id = request.cookies.get("user_id")
     if not user_id:
-        logger.warning("Submit pengeluaran ditolak: user belum login.")
+        logger.warning("Submit pengeluaran ditolak: user belum login")
         return RedirectResponse("/login", status_code=303)
 
     user_id = int(user_id)
-    logger.info(
-        f"[USER {user_id}] Tambah pengeluaran: nama={nama}, harga={harga}, jumlah={jumlah}, kolam_id={kolam_id}"
-    )
 
-    result = await create_pengeluaran(
+    # ================= VALIDASI WAJIB: KOLAM DIPILIH =================
+    if not kolam_id:
+        logger.warning(
+            f"[USER {user_id}] Submit pengeluaran gagal: kolam belum dipilih"
+        )
+        return RedirectResponse(
+            "/dashboard/pengeluaran?error=kolam_kosong",
+            status_code=303,
+        )
+
+    # ================= VALIDASI: KOLAM MILIK USER =================
+    kolam_list = await get_all_kolam(user_id)
+    kolam_ids = {k["id"] for k in kolam_list}
+    if kolam_id not in kolam_ids:
+        logger.warning(f"[USER {user_id}] Kolam_id tidak valid saat submit pengeluaran")
+        return RedirectResponse("/dashboard/pengeluaran", status_code=303)
+
+    logger.info(f"[USER {user_id}] Tambah pengeluaran: {nama}, kolam_id={kolam_id}")
+
+    await create_pengeluaran(
         user_id=user_id,
         nama_pengeluaran=nama,
         harga=harga,
@@ -87,11 +109,6 @@ async def pengeluaran_submit(
         catatan=catatan,
         kolam_id=kolam_id,
     )
-
-    if result:
-        logger.info(f"[USER {user_id}] Pengeluaran berhasil ditambahkan")
-    else:
-        logger.error(f"[USER {user_id}] Gagal tambah pengeluaran")
 
     return RedirectResponse("/dashboard/pengeluaran", status_code=303)
 
@@ -108,17 +125,32 @@ async def pengeluaran_edit(
     jumlah: int = Form(None),
     tanggal: str = Form(None),
     catatan: str = Form(None),
-    kolam_id: int = Form(None),  # baru
+    kolam_id: int | None = Form(None),
 ):
     user_id = request.cookies.get("user_id")
     if not user_id:
-        logger.warning("Edit pengeluaran ditolak: user belum login.")
+        logger.warning("Edit pengeluaran ditolak: user belum login")
         return RedirectResponse("/login", status_code=303)
 
     user_id = int(user_id)
-    logger.info(f"[USER {user_id}] Edit pengeluaran_id={pengeluaran_id}")
 
-    result = await update_pengeluaran(
+    # ================= VALIDASI KOLAM (JIKA DIUBAH) =================
+    if kolam_id:
+        kolam_list = await get_all_kolam(user_id)
+        kolam_ids = {k["id"] for k in kolam_list}
+        if kolam_id not in kolam_ids:
+            logger.warning(
+                f"[USER {user_id}] Kolam_id tidak valid saat edit pengeluaran"
+            )
+            return RedirectResponse("/dashboard/pengeluaran", status_code=303)
+    else:
+        kolam_id = None
+
+    logger.info(
+        f"[USER {user_id}] Edit pengeluaran_id={pengeluaran_id}, kolam_id={kolam_id}"
+    )
+
+    await update_pengeluaran(
         pengeluaran_id=pengeluaran_id,
         user_id=user_id,
         nama_pengeluaran=nama,
@@ -129,13 +161,6 @@ async def pengeluaran_edit(
         kolam_id=kolam_id,
     )
 
-    if result:
-        logger.info(
-            f"[USER {user_id}] Pengeluaran_id={pengeluaran_id} berhasil diupdate"
-        )
-    else:
-        logger.warning(f"[USER {user_id}] Gagal update pengeluaran_id={pengeluaran_id}")
-
     return RedirectResponse("/dashboard/pengeluaran", status_code=303)
 
 
@@ -143,21 +168,22 @@ async def pengeluaran_edit(
 # HAPUS PENGELUARAN
 # ============================================================
 @router.post("/dashboard/pengeluaran/delete")
-async def pengeluaran_delete(request: Request, pengeluaran_id: int = Form(...)):
+async def pengeluaran_delete(
+    request: Request,
+    pengeluaran_id: int = Form(...),
+):
     user_id = request.cookies.get("user_id")
     if not user_id:
-        logger.warning("Hapus pengeluaran ditolak: user belum login.")
+        logger.warning("Hapus pengeluaran ditolak: user belum login")
         return RedirectResponse("/login", status_code=303)
 
     user_id = int(user_id)
+
     logger.info(f"[USER {user_id}] Hapus pengeluaran_id={pengeluaran_id}")
 
-    success = await delete_pengeluaran(pengeluaran_id=pengeluaran_id, user_id=user_id)
-    if success:
-        logger.info(
-            f"[USER {user_id}] Pengeluaran_id={pengeluaran_id} berhasil dihapus"
-        )
-    else:
-        logger.warning(f"[USER {user_id}] Gagal hapus pengeluaran_id={pengeluaran_id}")
+    await delete_pengeluaran(
+        pengeluaran_id=pengeluaran_id,
+        user_id=user_id,
+    )
 
     return RedirectResponse("/dashboard/pengeluaran", status_code=303)
