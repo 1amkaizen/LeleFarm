@@ -32,7 +32,7 @@ async def panen_page(request: Request):
             continue
 
         total_berat_kolam = sum(p.get("total_berat", 0) for p in panen_kolam)
-        total_ikan_kolam = sum(p.get("jumlah_ikan", 0) for p in panen_kolam)
+      
         total_jual_kolam = sum(p.get("total_jual", 0) for p in panen_kolam)
 
         ringkasan_per_kolam[k["id"]] = {
@@ -41,17 +41,15 @@ async def panen_page(request: Request):
             "tanggal_mulai": k["tanggal_mulai"],
             "tanggal_panen": max(p["tanggal_panen"] for p in panen_kolam),
             "total_panen": len(panen_kolam),
-            "total_ikan": total_ikan_kolam,
-            "total_berat": total_berat_kolam,  # tetap angka
+            "total_berat": total_berat_kolam,
             "total_jual": total_jual_kolam,
-            "total_berat_fmt": fmt(total_berat_kolam),  # untuk template
-            "total_ikan_fmt": fmt(total_ikan_kolam),  # opsional, biar konsisten
+            "total_berat_fmt": fmt(total_berat_kolam),
             "total_jual_fmt": fmt(total_jual_kolam),
             "panen_detail": [
                 {
                     "id": p["id"],
                     "tanggal_panen": p["tanggal_panen"],
-                    "jumlah_ikan": fmt(p.get("jumlah_ikan", 0)),
+                    
                     "total_berat": fmt(p.get("total_berat", 0)),
                     "total_jual": fmt(p.get("total_jual", 0)),
                     "catatan": p.get("catatan", "-"),
@@ -60,20 +58,27 @@ async def panen_page(request: Request):
             ],
         }
 
-    total_ikan_global = sum(r["total_ikan"] for r in ringkasan_per_kolam.values())
-    total_berat_global = sum(r["total_berat"] for r in ringkasan_per_kolam.values())
-    total_panen_global = sum(r["total_panen"] for r in ringkasan_per_kolam.values())
-    total_jual_global = sum(r["total_jual"] for r in ringkasan_per_kolam.values())
+    # Ambil hanya kolam yang sudah panen
+    kolam_sudah_panen = list(ringkasan_per_kolam.values())
+
+    
+    total_berat_global = sum(r["total_berat"] for r in kolam_sudah_panen)
+    total_panen_global = sum(r["total_panen"] for r in kolam_sudah_panen)
+    total_jual_global = sum(r["total_jual"] for r in kolam_sudah_panen)
+    total_kolam_panen = len(kolam_sudah_panen)
+
+
 
     return request.app.templates.TemplateResponse(
         "dashboard/panen.html",
         {
             "request": request,
-            "ringkasan_per_kolam": list(ringkasan_per_kolam.values()),
-            "total_ikan_global": fmt(total_ikan_global),
+            "ringkasan_per_kolam": kolam_sudah_panen,
+            
             "total_berat_global": fmt(total_berat_global),
             "total_panen_global": fmt(total_panen_global),
             "total_jual_global": fmt(total_jual_global),
+            "total_kolam_panen": total_kolam_panen,
         },
     )
 
@@ -82,7 +87,6 @@ async def panen_page(request: Request):
 async def panen_edit(
     request: Request,
     panen_id: int = Form(...),
-    jumlah_ikan: int = Form(None),
     total_berat: float = Form(None),
     total_jual: int = Form(None),
     tanggal_panen: str = Form(None),
@@ -96,7 +100,6 @@ async def panen_edit(
     res = await edit_panen(
         panen_id=panen_id,
         user_id=user_id,
-        jumlah_ikan=jumlah_ikan,
         total_berat=total_berat,
         total_jual=total_jual,
         tanggal_panen=tanggal_panen,

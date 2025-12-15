@@ -39,7 +39,7 @@ async def get_all_panen(user_id: int = None, kolam_id: int = None):
 # ============================================================
 async def create_panen(
     kolam_id: int,
-    jumlah_ikan: int,
+    
     total_berat: float,
     total_jual: float = 0,
     catatan: str = None,
@@ -67,7 +67,7 @@ async def create_panen(
     payload = {
         "user_id": user_id,
         "kolam_id": kolam_id,
-        "jumlah_ikan": jumlah_ikan,
+      
         "total_berat": total_berat,
         "total_jual": total_jual,  # <- tambahan field
         "catatan": catatan or f"Panen otomatis pada {tanggal_panen}",
@@ -124,7 +124,7 @@ async def update_status_kolam(kolam_id: int, user_id: int):
 async def edit_panen(
     panen_id: int,
     user_id: int,
-    jumlah_ikan: int = None,
+    
     total_berat: float = None,
     total_jual: float = None,
     catatan: str = None,
@@ -132,8 +132,6 @@ async def edit_panen(
 ):
     db = get_db()
     payload = {}
-    if jumlah_ikan is not None:
-        payload["jumlah_ikan"] = jumlah_ikan
     if total_berat is not None:
         payload["total_berat"] = total_berat
     if total_jual is not None:

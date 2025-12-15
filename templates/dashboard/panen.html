@@ -27,25 +27,26 @@
 </div>
 
 <!-- ===== SUMMARY CARDS ===== -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+
+  <!-- Total Panen -->
   <div class="bg-white rounded-2xl shadow p-5 border border-gray-100">
     <h3 class="text-sm font-semibold text-gray-700 mb-2">Total Panen</h3>
-    <p class="text-2xl font-bold text-green-600">{{ total_ikan_global }} Ekor</p>
-    <p class="text-sm text-gray-500">{{ total_berat_global }} kg</p>
+    <p class="text-2xl font-bold text-green-600">{{ total_berat_global }} kg</p>
   </div>
-  <div class="bg-white rounded-2xl shadow p-5 border border-gray-100">
-    <h3 class="text-sm font-semibold text-gray-700 mb-2">Rata-rata Berat</h3>
-    <p class="text-2xl font-bold text-green-600">{{ rata_rata_berat }} kg/ekor</p>
-    <p class="text-sm text-gray-500 mt-1">Dihitung dari total panen</p>
-  </div>
+
+  <!-- Kolam Panen -->
   <div class="bg-white rounded-2xl shadow p-5 border border-gray-100">
     <h3 class="text-sm font-semibold text-gray-700 mb-2">Kolam Panen</h3>
     <p class="text-2xl font-bold text-green-600">{{ total_kolam_panen }} Kolam</p>
   </div>
+
+  <!-- Total Nilai Panen -->
   <div class="bg-gradient-to-br from-green-500 to-green-700 text-white rounded-2xl shadow-lg p-5">
     <h3 class="text-sm font-semibold mb-2">Total Nilai Panen</h3>
     <p class="text-3xl font-extrabold">Rp {{ total_jual_global }}</p>
   </div>
+
 </div>
 
 <!-- ===== DETAIL PER KOLAM ===== -->
@@ -64,7 +65,7 @@
         <tr>
           <th class="px-4 py-2">No</th>
           <th class="px-4 py-2">Tanggal Panen</th>
-          <th class="px-4 py-2">Jumlah Ekor</th>
+          
           <th class="px-4 py-2">Total Berat (kg)</th>
           <th class="px-4 py-2">Total Jual (Rp)</th>
           <th class="px-4 py-2">Catatan</th>
@@ -76,7 +77,7 @@
         <tr class="hover:bg-green-50 transition">
           <td class="px-4 py-2">{{ loop.index }}</td>
           <td class="px-4 py-2">{{ p.tanggal_panen }}</td>
-          <td class="px-4 py-2">{{ p.jumlah_ikan }} Ekor</td>
+          
           <td class="px-4 py-2">{{ p.total_berat }} kg</td>
           <td class="px-4 py-2">Rp {{ p.total_jual }}</td>
           <td class="px-4 py-2">{{ p.catatan }}</td>
@@ -85,7 +86,7 @@
             <button type="button" class="bg-yellow-400 text-white px-2 py-1 rounded hover:bg-yellow-500"
                     onclick="openEditModal(
                         '{{ p.id }}', 
-                        '{{ p.jumlah_ikan }}', 
+                        
                         '{{ p.total_berat }}', 
                         '{{ p.total_jual }}',
                         '{{ p.tanggal_panen[:10] }}',  <!-- ambil YYYY-MM-DD -->
@@ -106,7 +107,7 @@
       <tfoot class="bg-green-50 font-semibold">
         <tr>
           <td colspan="2">TOTAL</td>
-          <td>{{ kolam.total_ikan_fmt }} Ekor</td>
+         
           <td>{{ kolam.total_berat_fmt }} kg</td>
           <td>Rp {{ kolam.total_jual_fmt }}</td>
           <td colspan="2"></td>
@@ -128,10 +129,7 @@
     <form id="editForm" method="post" action="/dashboard/panen/edit">
       <input type="hidden" name="panen_id" id="edit_panen_id">
       
-      <div class="mb-3">
-        <label class="block text-sm font-medium mb-1">Jumlah Ikan</label>
-        <input type="number" name="jumlah_ikan" id="edit_jumlah_ikan" class="w-full border rounded px-2 py-1" required>
-      </div>
+
 
       <div class="mb-3">
         <label class="block text-sm font-medium mb-1">Total Berat (kg)</label>
@@ -164,7 +162,7 @@
 <script>
     function openEditModal(id, jumlah, berat, total_jual, tanggal, catatan) {
         document.getElementById('edit_panen_id').value = id;
-        document.getElementById('edit_jumlah_ikan').value = jumlah;
+        
         document.getElementById('edit_total_berat').value = berat;
         
         // Hapus titik ribuan sebelum assign ke input number
