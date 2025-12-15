@@ -26,14 +26,28 @@
   </div>
 </div>
 
+<!-- ===== SECTION HEADER ===== -->
+<div class="mb-5">
+  <div class="flex items-center gap-3">
+    <span class="w-1.5 h-8 bg-blue-500 rounded-full"></span>
+    <div>
+      <h2 class="text-xl font-bold text-gray-800">
+        Ringkasan Total Panen Semua Kolam
+      </h2>
+      <p class="text-sm text-gray-500">
+        Akumulasi panen per kolam
+      </p>
+    </div>
+  </div>
+</div>
 <!-- ===== SUMMARY CARDS ===== -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
 
   <!-- Total Panen -->
   <div class="bg-white rounded-2xl shadow p-5 border border-gray-100">
     <h3 class="text-sm font-semibold text-gray-700 mb-2">Total Panen</h3>
-    <p class="text-2xl font-bold text-green-600">{{ total_berat_global }} kg</p>
-  </div>
+    <p class="text-2xl font-bold text-green-600">{{ total_berat_global }}</p>
+</div>
 
   <!-- Kolam Panen -->
   <div class="bg-white rounded-2xl shadow p-5 border border-gray-100">
@@ -49,78 +63,198 @@
 
 </div>
 
+
+<!-- ===== SECTION HEADER ===== -->
+<div class="mb-5">
+  <div class="flex items-center gap-3">
+    <span class="w-1.5 h-8 bg-blue-500 rounded-full"></span>
+    <div>
+      <h2 class="text-xl font-bold text-gray-800">
+        Ringkasan Total per Kolam
+      </h2>
+      <p class="text-sm text-gray-500">
+        Akumulasi panen per kolam
+      </p>
+    </div>
+  </div>
+</div>
+
+
 <!-- ===== DETAIL PER KOLAM ===== -->
 {% for kolam in ringkasan_per_kolam %}
 <div class="mb-6 border rounded-2xl shadow p-4 bg-white">
   <div class="flex items-center justify-between mb-4">
-    <h2 class="text-lg font-bold text-gray-800">{{ kolam.nama_kolam }}</h2>
-    <span class="px-3 py-1 rounded-full text-sm font-semibold {% if kolam.status_panen == 'belum' %}bg-red-200 text-red-800{% else %}bg-green-200 text-green-800{% endif %}">
+    <h2 class="text-lg font-bold text-gray-800 whitespace-nowrap">
+      {{ kolam.nama_kolam }}
+    </h2>
+    <span class="px-3 py-1 rounded-full text-sm font-semibold whitespace-nowrap
+      {% if kolam.status_panen == 'belum' %}
+        bg-red-200 text-red-800
+      {% else %}
+        bg-green-200 text-green-800
+      {% endif %}
+    ">
       {{ kolam.status_panen|capitalize }}
     </span>
   </div>
 
   <div class="overflow-x-auto rounded-lg shadow ring-1 ring-black/5">
-    <table class="w-full table-auto text-sm text-gray-700 text-center">
+    <table class="w-full min-w-max table-auto text-sm text-gray-700 text-center whitespace-nowrap">
       <thead class="bg-green-500 text-white">
         <tr>
           <th class="px-4 py-2">No</th>
           <th class="px-4 py-2">Tanggal Panen</th>
-          
-          <th class="px-4 py-2">Total Berat (kg)</th>
+          <th class="px-4 py-2">Tanggal Tebar</th>
+          <th class="px-4 py-2">Umur Panen (Hari)</th>
+          <th class="px-4 py-2">Total Panen</th>
           <th class="px-4 py-2">Total Jual (Rp)</th>
+          <th class="px-4 py-2">Ekor Bibit</th>
+          <th class="px-4 py-2">Berat Bibit</th>
+          <th class="px-4 py-2">Kematian</th>
+          <th class="px-4 py-2">Pengeluaran (Rp)</th>
+          
           <th class="px-4 py-2">Catatan</th>
           <th class="px-4 py-2">Aksi</th>
         </tr>
       </thead>
+
       <tbody>
         {% for p in kolam.panen_detail %}
         <tr class="hover:bg-green-50 transition">
           <td class="px-4 py-2">{{ loop.index }}</td>
           <td class="px-4 py-2">{{ p.tanggal_panen }}</td>
-          
-          <td class="px-4 py-2">{{ p.total_berat }} kg</td>
+          <td class="px-4 py-2">{{ kolam.tanggal_tebar }}</td>
+          <td class="px-4 py-2">{{ kolam.hari_aktif }} Hari</td>
+          <td class="px-4 py-2">{{ p.total_berat }}</td>
           <td class="px-4 py-2">Rp {{ p.total_jual }}</td>
-          <td class="px-4 py-2">{{ p.catatan }}</td>
-          <td class="px-4 py-2 flex justify-center gap-2">
-            <!-- tombol Edit -->
-            <button type="button" class="bg-yellow-400 text-white px-2 py-1 rounded hover:bg-yellow-500"
-                    onclick="openEditModal(
-                        '{{ p.id }}', 
-                        
-                        '{{ p.total_berat }}', 
-                        '{{ p.total_jual }}',
-                        '{{ p.tanggal_panen[:10] }}',  <!-- ambil YYYY-MM-DD -->
-                        '{{ p.catatan }}'
-                    )">
+          <td class="px-4 py-2">{{ kolam.total_ekor_bibit_fmt }}</td>
+          <td class="px-4 py-2">{{ kolam.total_berat_bibit_fmt }}</td>
+          <td class="px-4 py-2">{{ kolam.total_kematian_fmt }} ekor</td>
+          <td class="px-4 py-2">Rp {{ kolam.total_pengeluaran_fmt }}</td>
+          
+          <td class="px-4 py-2 max-w-xs truncate">
+            {{ p.catatan }}
+          </td>
+          <td class="px-4 py-2">
+            <button
+              type="button"
+              class="bg-yellow-400 text-white px-2 py-1 rounded hover:bg-yellow-500 whitespace-nowrap"
+              onclick="openEditModal(
+                '{{ p.id }}',
+                '{{ p.total_berat }}',
+                '{{ p.total_jual }}',
+                '{{ p.tanggal_panen[:10] }}',
+                '{{ p.catatan|default('') }}'
+              )"
+            >
               Edit
             </button>
-            
-
           </td>
         </tr>
         {% else %}
         <tr>
-          <td class="px-4 py-2" colspan="7">Belum ada panen</td>
+          <td class="px-4 py-2" colspan="12">Belum ada panen</td>
         </tr>
         {% endfor %}
       </tbody>
-      <tfoot class="bg-green-50 font-semibold">
+
+      <tfoot class="bg-green-50 font-semibold text-center whitespace-nowrap">
         <tr>
-          <td colspan="2">TOTAL</td>
+          <td class="px-4 py-2" colspan="3">TOTAL</td>
+          <td class="px-4 py-2">{{ kolam.hari_aktif }} Hari</td>
+          <td class="px-4 py-2">{{ kolam.total_berat_fmt }}</td>
+          <td class="px-4 py-2">Rp {{ kolam.total_jual_fmt }}</td>
+          <td class="px-4 py-2">{{ kolam.total_ekor_bibit_fmt }}</td>
+          <td class="px-4 py-2">{{ kolam.total_berat_bibit_fmt }}</td>
+          <td class="px-4 py-2">{{ kolam.total_kematian_fmt }} ekor</td>
+          <td class="px-4 py-2">Rp {{ kolam.total_pengeluaran_fmt }}</td>
          
-          <td>{{ kolam.total_berat_fmt }} kg</td>
-          <td>Rp {{ kolam.total_jual_fmt }}</td>
-          <td colspan="2"></td>
+          <td class="px-4 py-2" colspan="2"></td>
         </tr>
       </tfoot>
-      
-      
-      
-      
     </table>
   </div>
 </div>
+<!-- ===== RINGKASAN PANEN ===== -->
+<div class="mt-4 overflow-x-auto rounded-lg shadow ring-1 ring-black/5 mb-6">
+  <table class="w-full min-w-max table-auto text-sm text-gray-700 whitespace-nowrap">
+    <thead class="bg-gray-100 text-gray-800">
+      <tr>
+        <th class="px-4 py-2 text-left">Rincian</th>
+        <th class="px-4 py-2 text-right">Nilai</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <tr>
+        <td class="px-4 py-2">Umur Panen</td>
+        <td class="px-4 py-2 text-right">{{ kolam.hari_aktif }} Hari</td>
+      </tr>
+
+      <tr>
+        <td class="px-4 py-2">Jumlah Bibit Tebar</td>
+        <td class="px-4 py-2 text-right">{{ kolam.total_ekor_bibit_fmt }} Ekor</td>
+      </tr>
+
+      <tr>
+        <td class="px-4 py-2">Biaya Bibit</td>
+        <td class="px-4 py-2 text-right">Rp {{ kolam.total_biaya_bibit_fmt }}</td>
+      </tr>
+
+      <tr>
+        <td class="px-4 py-2">Total Pakan Dihabiskan</td>
+        <td class="px-4 py-2 text-right">{{ kolam.total_pakan_kg_fmt }}</td>
+      </tr>
+
+      <tr>
+        <td class="px-4 py-2">Total Biaya Pakan</td>
+        <td class="px-4 py-2 text-right">Rp {{ kolam.total_biaya_pakan_fmt }}</td>
+      </tr>
+
+      <tr>
+        <td class="px-4 py-2">Biaya Operasional Lain</td>
+        <td class="px-4 py-2 text-right">Rp {{ kolam.total_operasional_fmt }}</td>
+      </tr>
+
+      <tr class="border-t font-semibold">
+        <td class="px-4 py-2">Total Biaya Produksi</td>
+        <td class="px-4 py-2 text-right">Rp {{ kolam.total_biaya_produksi_fmt }}</td>
+      </tr>
+
+      <tr>
+        <td class="px-4 py-2">Total Berat Panen</td>
+        <td class="px-4 py-2 text-right">{{ kolam.total_berat_fmt }}</td>
+      </tr>
+
+      <tr>
+        <td class="px-4 py-2">Total Penjualan</td>
+        <td class="px-4 py-2 text-right">Rp {{ kolam.total_jual_fmt }}</td>
+      </tr>
+
+      <tr class="bg-green-50 font-semibold">
+        <td class="px-4 py-2">Laba Kotor</td>
+        <td class="px-4 py-2 text-right text-green-700">
+          Rp {{ kolam.laba_kotor_fmt }}
+        </td>
+      </tr>
+
+      <tr class="bg-green-100 font-bold">
+        <td class="px-4 py-2">Laba Bersih</td>
+        <td class="px-4 py-2 text-right text-green-800">
+          Rp {{ kolam.laba_bersih_fmt }}
+        </td>
+      </tr>
+
+    </tbody>
+  </table>
+</div>
+
+
 {% endfor %}
+
+
+
+
 
 <!-- ===== MODAL EDIT PANEN ===== -->
 <div id="editModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
@@ -160,27 +294,28 @@
 </div>
 
 <script>
-    function openEditModal(id, jumlah, berat, total_jual, tanggal, catatan) {
-        document.getElementById('edit_panen_id').value = id;
-        
-        document.getElementById('edit_total_berat').value = berat;
-        
-        // Hapus titik ribuan sebelum assign ke input number
-        let totalJualClean = total_jual.toString().replace(/\./g, '');
-        document.getElementById('edit_total_jual').value = totalJualClean;
-    
-        document.getElementById('edit_tanggal_panen').value = tanggal;
-        document.getElementById('edit_catatan').value = catatan;
-        document.getElementById('editModal').classList.remove('hidden');
-        document.getElementById('editModal').classList.add('flex');
-    }
-    
+  function openEditModal(id, berat, total_jual, tanggal, catatan) {
+      document.getElementById('edit_panen_id').value = id;
 
-function closeEditModal() {
-    document.getElementById('editModal').classList.add('hidden');
-    document.getElementById('editModal').classList.remove('flex');
-}
+      let beratClean = berat.toString().replace(/[^0-9.]/g, '');
+      document.getElementById('edit_total_berat').value = beratClean;
+
+      let totalJualClean = total_jual.toString().replace(/\./g, '');
+      document.getElementById('edit_total_jual').value = totalJualClean;
+
+      document.getElementById('edit_tanggal_panen').value = tanggal;
+      document.getElementById('edit_catatan').value = catatan ?? '';
+
+      const modal = document.getElementById('editModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+  }
+
+  function closeEditModal() {
+      const modal = document.getElementById('editModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+  }
 </script>
-
 
 {% endblock %}
