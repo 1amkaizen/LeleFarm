@@ -276,7 +276,6 @@ async def update_status_kolam(user_id: int, kolam_id: int, status: str):
                 "kolam_id": kolam_id,
                 "nama_kolam": kolam_data.get("nama_kolam"),
                 "tanggal_panen": today,
-                "jumlah_ikan": kolam_data.get("jumlah_ikan", 0),
                 "total_berat": kolam_data.get("total_berat", 0),
                 "catatan": f"Panen otomatis pada {today}",
             }

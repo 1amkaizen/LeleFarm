@@ -70,189 +70,240 @@
     <span class="w-1.5 h-8 bg-blue-500 rounded-full"></span>
     <div>
       <h2 class="text-xl font-bold text-gray-800">
-        Ringkasan Total per Kolam
+        Ringkasan Total Kolam
       </h2>
       <p class="text-sm text-gray-500">
-        Akumulasi panen per kolam
+        Akumulasi panen 
       </p>
     </div>
   </div>
 </div>
 
 
-<!-- ===== DETAIL PER KOLAM ===== -->
-{% for kolam in ringkasan_per_kolam %}
-<div class="mb-6 border rounded-2xl shadow p-4 bg-white">
-  <div class="flex items-center justify-between mb-4">
-    <h2 class="text-lg font-bold text-gray-800 whitespace-nowrap">
-      {{ kolam.nama_kolam }}
-    </h2>
-    <span class="px-3 py-1 rounded-full text-sm font-semibold whitespace-nowrap
-      {% if kolam.status_panen == 'belum' %}
-        bg-red-200 text-red-800
-      {% else %}
-        bg-green-200 text-green-800
-      {% endif %}
-    ">
-      {{ kolam.status_panen|capitalize }}
-    </span>
-  </div>
+<!-- templates/dashboard/panen.html -->
+<!-- ===== TABEL SATU UNTUK SEMUA KOLAM ===== -->
+<div class="overflow-x-auto rounded-xl shadow-lg ring-1 ring-gray-200">
+    <table class="w-full min-w-max table-auto text-sm text-gray-700 text-center">
+        <thead class="bg-green-600 text-white sticky top-0">
+            <tr>
+                <th class="px-3 py-3 font-semibold text-xs uppercase tracking-wider">No</th>
+                <th class="px-3 py-3 font-semibold text-xs uppercase tracking-wider">Kolam</th>
+                <th class="px-3 py-3 font-semibold text-xs uppercase tracking-wider">Tgl Panen</th>
+                <th class="px-3 py-3 font-semibold text-xs uppercase tracking-wider">Tgl Tebar</th>
+                <th class="px-3 py-3 font-semibold text-xs uppercase tracking-wider">Umur</th>
+                <th class="px-3 py-3 font-semibold text-xs uppercase tracking-wider">Total Panen</th>
+                <th class="px-3 py-3 font-semibold text-xs uppercase tracking-wider">Total Jual</th>
+                <th class="px-3 py-3 font-semibold text-xs uppercase tracking-wider">Bibit</th>
+                <th class="px-3 py-3 font-semibold text-xs uppercase tracking-wider">Berat Bibit</th>
+                <th class="px-3 py-3 font-semibold text-xs uppercase tracking-wider">Kematian</th>
+                <th class="px-3 py-3 font-semibold text-xs uppercase tracking-wider">Pengeluaran</th>
+                <th class="px-3 py-3 font-semibold text-xs uppercase tracking-wider max-w-[150px]">Catatan</th>
+                <th class="px-3 py-3 font-semibold text-xs uppercase tracking-wider">Aksi</th>
+            </tr>
+        </thead>
 
-  <div class="overflow-x-auto rounded-lg shadow ring-1 ring-black/5">
-    <table class="w-full min-w-max table-auto text-sm text-gray-700 text-center whitespace-nowrap">
-      <thead class="bg-green-500 text-white">
-        <tr>
-          <th class="px-4 py-2">No</th>
-          <th class="px-4 py-2">Tanggal Panen</th>
-          <th class="px-4 py-2">Tanggal Tebar</th>
-          <th class="px-4 py-2">Umur Panen (Hari)</th>
-          <th class="px-4 py-2">Total Panen</th>
-          <th class="px-4 py-2">Total Jual (Rp)</th>
-          <th class="px-4 py-2">Ekor Bibit</th>
-          <th class="px-4 py-2">Berat Bibit</th>
-          <th class="px-4 py-2">Kematian</th>
-          <th class="px-4 py-2">Pengeluaran (Rp)</th>
-          
-          <th class="px-4 py-2">Catatan</th>
-          <th class="px-4 py-2">Aksi</th>
-        </tr>
-      </thead>
+        <tbody>
+            {% set counter = 1 %}
+            {% for kolam in ringkasan_per_kolam %}
+                {% for p in kolam.panen_detail %}
+                <tr class="border-b last:border-b-0 hover:bg-green-50 transition duration-150">
+                    <td class="px-3 py-2.5 font-medium">{{ counter }}</td>
+                    <td class="px-3 py-2.5">{{ kolam.nama_kolam }}</td>
+                    <td class="px-3 py-2.5">{{ p.tanggal_panen }}</td>
+                    <td class="px-3 py-2.5">{{ kolam.tanggal_tebar }}</td>
+                    <td class="px-3 py-2.5 font-semibold">{{ kolam.hari_aktif }} Hari</td>
+                    <td class="px-3 py-2.5 text-green-700 font-bold">{{ p.total_berat }}</td>
+                    <td class="px-3 py-2.5 text-green-700 font-bold">Rp {{ p.total_jual }}</td>
+                    <td class="px-3 py-2.5">{{ kolam.total_ekor_bibit_fmt }} ekor</td>
+                    <td class="px-3 py-2.5">{{ kolam.total_berat_bibit_fmt }}</td>
+                    <td class="px-3 py-2.5">{{ kolam.total_kematian_fmt }} ekor</td>
+                    <td class="px-3 py-2.5">Rp {{ kolam.total_pengeluaran_fmt }}</td>
+                    <td class="px-3 py-2.5 text-left max-w-[150px] truncate" title="{{ p.catatan }}">{{ p.catatan }}</td>
+                    <td class="px-3 py-2.5">
+                        <button
+                            type="button"
+                            class="bg-yellow-500 text-white text-xs px-3 py-1.5 rounded-lg shadow-md hover:bg-yellow-600 transition duration-150 whitespace-nowrap"
+                            onclick="openEditModal(
+                              '{{ p.id }}',
+                              '{{ p.total_berat }}',
+                              '{{ p.total_jual }}',
+                              '{{ p.tanggal_panen[:10] }}',
+                              '{{ p.catatan|default('') }}'
+                            )"
+                        >
+                            <i class="fas fa-edit mr-1"></i> Edit
+                        </button>
+                    </td>
+                </tr>
+                {% set counter = counter + 1 %}
+                {% endfor %}
+            {% else %}
+            <tr>
+                <td class="px-3 py-4 text-center text-gray-500 bg-gray-50" colspan="13">Belum ada panen tercatat.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
 
-      <tbody>
-        {% for p in kolam.panen_detail %}
-        <tr class="hover:bg-green-50 transition">
-          <td class="px-4 py-2">{{ loop.index }}</td>
-          <td class="px-4 py-2">{{ p.tanggal_panen }}</td>
-          <td class="px-4 py-2">{{ kolam.tanggal_tebar }}</td>
-          <td class="px-4 py-2">{{ kolam.hari_aktif }} Hari</td>
-          <td class="px-4 py-2">{{ p.total_berat }}</td>
-          <td class="px-4 py-2">Rp {{ p.total_jual }}</td>
-          <td class="px-4 py-2">{{ kolam.total_ekor_bibit_fmt }}</td>
-          <td class="px-4 py-2">{{ kolam.total_berat_bibit_fmt }}</td>
-          <td class="px-4 py-2">{{ kolam.total_kematian_fmt }} ekor</td>
-          <td class="px-4 py-2">Rp {{ kolam.total_pengeluaran_fmt }}</td>
-          
-          <td class="px-4 py-2 max-w-xs truncate">
-            {{ p.catatan }}
-          </td>
-          <td class="px-4 py-2">
-            <button
-              type="button"
-              class="bg-yellow-400 text-white px-2 py-1 rounded hover:bg-yellow-500 whitespace-nowrap"
-              onclick="openEditModal(
-                '{{ p.id }}',
-                '{{ p.total_berat }}',
-                '{{ p.total_jual }}',
-                '{{ p.tanggal_panen[:10] }}',
-                '{{ p.catatan|default('') }}'
-              )"
-            >
-              Edit
-            </button>
-          </td>
-        </tr>
-        {% else %}
-        <tr>
-          <td class="px-4 py-2" colspan="12">Belum ada panen</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-
-      <tfoot class="bg-green-50 font-semibold text-center whitespace-nowrap">
-        <tr>
-          <td class="px-4 py-2" colspan="3">TOTAL</td>
-          <td class="px-4 py-2">{{ kolam.hari_aktif }} Hari</td>
-          <td class="px-4 py-2">{{ kolam.total_berat_fmt }}</td>
-          <td class="px-4 py-2">Rp {{ kolam.total_jual_fmt }}</td>
-          <td class="px-4 py-2">{{ kolam.total_ekor_bibit_fmt }}</td>
-          <td class="px-4 py-2">{{ kolam.total_berat_bibit_fmt }}</td>
-          <td class="px-4 py-2">{{ kolam.total_kematian_fmt }} ekor</td>
-          <td class="px-4 py-2">Rp {{ kolam.total_pengeluaran_fmt }}</td>
-         
-          <td class="px-4 py-2" colspan="2"></td>
-        </tr>
-      </tfoot>
+        <tfoot class="bg-green-50 font-extrabold text-center border-t-4 border-green-200">
+            <tr>
+                <td class="px-3 py-3 text-sm text-gray-800" colspan="4">TOTAL KESELURUHAN</td>
+                <td class="px-3 py-3 text-sm text-green-800">{{ ringkasan_per_kolam|sum(attribute='hari_aktif') }} Hari</td>
+                <td class="px-3 py-3 text-sm text-green-800">{{ "%.0f"|format(ringkasan_per_kolam|sum(attribute='total_berat'))|replace(',', '.') }}</td>
+                <td class="px-3 py-3 text-sm text-green-800">Rp {{ "{:,.0f}".format(ringkasan_per_kolam|sum(attribute='total_jual'))|replace(',', '.') }}</td>
+                <td class="px-3 py-3 text-sm text-gray-800">{{ ringkasan_per_kolam|sum(attribute='total_ekor_bibit')|replace(',', '.') }} ekor</td>
+                <td class="px-3 py-3 text-sm text-gray-800">{{ "%.0f"|format(ringkasan_per_kolam|sum(attribute='total_berat_bibit'))|replace(',', '.') }}</td>
+                <td class="px-3 py-3 text-sm text-gray-800">{{ ringkasan_per_kolam|sum(attribute='total_kematian')|replace(',', '.') }} ekor</td>
+                <td class="px-3 py-3 text-sm text-gray-800">Rp {{ "{:,.0f}".format(ringkasan_per_kolam|sum(attribute='total_pengeluaran'))|replace(',', '.') }}</td>
+                
+                <td class="px-3 py-3" colspan="2"></td>
+            </tr>
+        </tfoot>
     </table>
+</div>
+
+
+
+<!-- ===== SECTION HEADER ===== -->
+<div class="mb-6 mt-4">
+  <div class="flex items-center gap-3">
+    <span class="w-1.5 h-8 bg-blue-500 rounded-full"></span>
+    <div>
+      <h2 class="text-2xl font-bold text-gray-900">
+        Ringkasan Panen Kolam
+      </h2>
+      <p class="text-sm text-gray-500">
+        Rekapitulasi data panen, biaya, dan performa tiap kolam
+      </p>
+    </div>
   </div>
 </div>
-<!-- ===== RINGKASAN PANEN ===== -->
-<div class="mt-4 overflow-x-auto rounded-lg shadow ring-1 ring-black/5 mb-6">
-  <table class="w-full min-w-max table-auto text-sm text-gray-700 whitespace-nowrap">
-    <thead class="bg-gray-100 text-gray-800">
-      <tr>
-        <th class="px-4 py-2 text-left">Rincian</th>
-        <th class="px-4 py-2 text-right">Nilai</th>
-      </tr>
-    </thead>
-    <tbody>
 
-      <tr>
-        <td class="px-4 py-2">Umur Panen</td>
-        <td class="px-4 py-2 text-right">{{ kolam.hari_aktif }} Hari</td>
-      </tr>
 
-      <tr>
-        <td class="px-4 py-2">Jumlah Bibit Tebar</td>
-        <td class="px-4 py-2 text-right">{{ kolam.total_ekor_bibit_fmt }} Ekor</td>
-      </tr>
 
-      <tr>
-        <td class="px-4 py-2">Biaya Bibit</td>
-        <td class="px-4 py-2 text-right">Rp {{ kolam.total_biaya_bibit_fmt }}</td>
-      </tr>
+<!-- templates/dashboard/kolam_pagination.html -->
+<div id="kolam-container">
+    {% for kolam in ringkasan_per_kolam %}
+    <div class="kolam-item mb-4 p-5 bg-white rounded-xl shadow-lg ring-1 ring-gray-100 transition duration-300 hover:shadow-xl" {% if not loop.first %}style="display:none"{% endif %}>
+        <!-- ===== DETAIL KOLAM ===== -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-3 mb-3 border-gray-100">
+            <h2 class="text-xl font-extrabold text-gray-800 tracking-tight break-words">{{ kolam.nama_kolam }}</h2>
+            <span class="mt-2 sm:mt-0 px-3 py-1 text-sm font-bold rounded-full
+                {% if kolam.status_panen == 'belum' %}
+                    bg-red-500 text-white shadow-md
+                {% else %}
+                    bg-green-500 text-white shadow-md
+                {% endif %}
+            ">
+                {{ kolam.status_panen|capitalize }}
+            </span>
+        </div>
 
-      <tr>
-        <td class="px-4 py-2">Total Pakan Dihabiskan</td>
-        <td class="px-4 py-2 text-right">{{ kolam.total_pakan_kg_fmt }}</td>
-      </tr>
+        <!-- === BAGIAN PRODUKSI & BIAYA === -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+            <div class="col-span-1 sm:col-span-2 border-b pb-2 mb-2">
+                <h3 class="font-bold text-gray-600 mb-1">Produksi & Biaya Awal</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-1 gap-x-4">
+                    <div class="text-gray-700 break-words">
+                        <i class="fas fa-fish text-blue-500 mr-2"></i>Jml Bibit: <span class="font-semibold text-blue-800">{{ kolam.total_ekor_bibit_fmt }} Ekor</span>
+                    </div>
+                    <div class="text-gray-700 break-words">
+                        <i class="fas fa-money-bill-wave text-blue-500 mr-2"></i>Biaya Bibit: <span class="font-semibold text-blue-800">Rp {{ kolam.total_biaya_bibit_fmt }}</span>
+                    </div>
+                    <div class="text-gray-700 break-words">
+                        <i class="fas fa-boxes text-yellow-600 mr-2"></i>Total Pakan: <span class="font-semibold text-yellow-800">{{ kolam.total_pakan_kg_fmt }}</span>
+                    </div>
+                    <div class="text-gray-700 break-words">
+                        <i class="fas fa-money-bill-wave text-yellow-600 mr-2"></i>Biaya Pakan: <span class="font-semibold text-yellow-800">Rp {{ kolam.total_biaya_pakan_fmt }}</span>
+                    </div>
+                </div>
+            </div>
 
-      <tr>
-        <td class="px-4 py-2">Total Biaya Pakan</td>
-        <td class="px-4 py-2 text-right">Rp {{ kolam.total_biaya_pakan_fmt }}</td>
-      </tr>
+            <div class="col-span-1 sm:col-span-2 border-b pb-2 mb-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-1 gap-x-4">
+                    <div class="text-gray-700 col-span-1 break-words">
+                        <i class="fas fa-wrench text-gray-500 mr-2"></i>Operasional Lain: <span class="font-semibold">Rp {{ kolam.total_operasional_fmt }}</span>
+                    </div>
+                    <div class="col-span-1 text-right bg-yellow-50 p-1 rounded-md break-words">
+                        <span class="font-bold text-base text-yellow-800">Total Biaya Produksi:</span>
+                        <span class="font-extrabold text-base text-yellow-800 ml-1">Rp {{ kolam.total_biaya_produksi_fmt }}</span>
+                    </div>
+                </div>
+            </div>
 
-      <tr>
-        <td class="px-4 py-2">Biaya Operasional Lain</td>
-        <td class="px-4 py-2 text-right">Rp {{ kolam.total_operasional_fmt }}</td>
-      </tr>
+            <!-- BAGIAN PANEN & PENJUALAN -->
+            <div class="col-span-1 sm:col-span-2 border-b pb-2 mb-2">
+                <h3 class="font-bold text-gray-600 mb-1">Panen & Penjualan</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-1 gap-x-4">
+                    <div class="text-gray-700 break-words">
+                        <i class="fas fa-calendar-alt text-teal-500 mr-2"></i>Tebar: <span class="font-semibold">{{ kolam.tanggal_tebar }}</span>
+                    </div>
+                    <div class="text-gray-700 break-words">
+                        <i class="fas fa-calendar-check text-teal-500 mr-2"></i>Panen Terakhir: <span class="font-semibold">{{ kolam.panen_detail[-1].tanggal_panen if kolam.panen_detail|length > 0 else '-' }}</span>
+                    </div>
+                    <div class="text-gray-700 break-words">
+                        <i class="fas fa-clock text-teal-500 mr-2"></i>Umur Panen: <span class="font-bold text-teal-700">{{ kolam.hari_aktif }} Hari</span>
+                    </div>
+                    <div class="text-gray-700 break-words">
+                        <i class="fas fa-weight-hanging text-teal-500 mr-2"></i>Total Berat Panen: <span class="font-bold text-lg text-blue-700">{{ kolam.total_berat_fmt }}</span>
+                    </div>
+                    <div class="col-span-1 sm:col-span-2 text-right pt-1 break-words">
+                        <span class="font-bold text-lg text-blue-700">Total Penjualan:</span>
+                        <span class="font-extrabold text-2xl text-blue-700 ml-2">Rp {{ kolam.total_jual_fmt }}</span>
+                    </div>
+                </div>
+            </div>
 
-      <tr class="border-t font-semibold">
-        <td class="px-4 py-2">Total Biaya Produksi</td>
-        <td class="px-4 py-2 text-right">Rp {{ kolam.total_biaya_produksi_fmt }}</td>
-      </tr>
+            <!-- BAGIAN LABA -->
+            <div class="col-span-1 sm:col-span-2">
+                <h3 class="font-bold text-gray-600 mb-1">Laba</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-1 gap-x-4">
+                    <div class="p-2 rounded-lg 
+                        {% if kolam.laba_kotor < 0 %}
+                            bg-red-100 border border-red-300
+                        {% else %}
+                            bg-green-100 border border-green-300
+                        {% endif %}
+                        break-words
+                    ">
+                        <span class="text-sm font-semibold block">Laba Kotor</span>
+                        <span class="font-extrabold text-xl 
+                            {% if kolam.laba_kotor < 0 %}text-red-700{% else %}text-green-700{% endif %}
+                        ">
+                            Rp {{ kolam.laba_kotor_fmt }}
+                        </span>
+                    </div>
 
-      <tr>
-        <td class="px-4 py-2">Total Berat Panen</td>
-        <td class="px-4 py-2 text-right">{{ kolam.total_berat_fmt }}</td>
-      </tr>
-
-      <tr>
-        <td class="px-4 py-2">Total Penjualan</td>
-        <td class="px-4 py-2 text-right">Rp {{ kolam.total_jual_fmt }}</td>
-      </tr>
-
-      <tr class="bg-green-50 font-semibold">
-        <td class="px-4 py-2">Laba Kotor</td>
-        <td class="px-4 py-2 text-right text-green-700">
-          Rp {{ kolam.laba_kotor_fmt }}
-        </td>
-      </tr>
-
-      <tr class="bg-green-100 font-bold">
-        <td class="px-4 py-2">Laba Bersih</td>
-        <td class="px-4 py-2 text-right text-green-800">
-          Rp {{ kolam.laba_bersih_fmt }}
-        </td>
-      </tr>
-
-    </tbody>
-  </table>
+                    <div class="p-2 rounded-lg 
+                        {% if kolam.laba_bersih < 0 %}
+                            bg-red-100 border border-red-300
+                        {% else %}
+                            bg-green-100 border border-green-300
+                        {% endif %}
+                        break-words
+                    ">
+                        <span class="text-sm font-semibold block">Laba Bersih</span>
+                        <span class="font-extrabold text-xl 
+                            {% if kolam.laba_bersih < 0 %}text-red-700{% else %}text-green-700{% endif %}
+                        ">
+                            Rp {{ kolam.laba_bersih_fmt }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
 </div>
 
-
-{% endfor %}
-
-
+<!-- ===== PAGINATION BUTTONS MODERN ===== -->
+<div class="flex justify-center mt-4 gap-3 mb-5">
+    <button id="prevBtn" class="w-10 h-10 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300 transition">
+        <i class="fas fa-chevron-left text-gray-700"></i>
+    </button>
+    <button id="nextBtn" class="w-10 h-10 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300 transition">
+        <i class="fas fa-chevron-right text-gray-700"></i>
+    </button>
+</div>
 
 
 
@@ -317,5 +368,35 @@
       modal.classList.remove('flex');
   }
 </script>
+
+<!-- ===== JS PAGINATION ===== -->
+<script>
+let currentIndex = 0;
+const kolamItems = document.querySelectorAll('.kolam-item');
+
+function showKolam(index) {
+    kolamItems.forEach((el, i) => {
+        el.style.display = i === index ? 'block' : 'none';
+    });
+}
+
+document.getElementById('prevBtn').addEventListener('click', () => {
+    if(currentIndex > 0){
+        currentIndex--;
+        showKolam(currentIndex);
+    }
+});
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+    if(currentIndex < kolamItems.length - 1){
+        currentIndex++;
+        showKolam(currentIndex);
+    }
+});
+
+// inisialisasi tampilan pertama
+showKolam(currentIndex);
+</script>
+
 
 {% endblock %}
