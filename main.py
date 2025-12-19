@@ -15,12 +15,12 @@ from routes.dashboard import router as dashboard_router
 from routes.kolam import router as kolam_router
 from routes.pengeluaran import router as pengeluaran_router
 from routes.kematian import router as kematian_router
-from routes.pakan import router as pakan_router
+from routes.pemberian_pakan import router as pemberian_pakan_router
 from routes.bibit import router as bibit_router
 from routes.pakan_stok import router as pakan_stok_router
 from routes.prediksi import router as prediksi_router
 from routes.ringkasan import router as ringkasan_router
-from routes.perhitungan_pakan import router as perhitungan_pakan_router
+# from routes.perhitungan_pakan import router as perhitungan_pakan_router
 from routes.panen import router as panen_router
 
 
@@ -59,12 +59,12 @@ app.include_router(dashboard_router)
 app.include_router(kolam_router)
 app.include_router(pengeluaran_router)
 app.include_router(kematian_router)
-app.include_router(pakan_router)
+app.include_router(pemberian_pakan_router)
 app.include_router(bibit_router)
 app.include_router(pakan_stok_router)
 app.include_router(prediksi_router)
 app.include_router(ringkasan_router)
-app.include_router(perhitungan_pakan_router)
+# app.include_router(perhitungan_pakan_router)
 app.include_router(panen_router)
 
 # Handler untuk 404

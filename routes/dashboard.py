@@ -12,7 +12,7 @@ from services.kolam import get_all_kolam
 from services.kematian import get_all_kematian
 from services.bibit import get_all_bibit
 from services.pengeluaran import get_all_pengeluaran
-from services.pakan import get_all_pakan
+from services.pemberian_pakan import get_all_pakan
 from services.pakan_stok import get_all_pakan_stok
 
 router = APIRouter()

@@ -13,6 +13,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 
     <style>
@@ -178,18 +179,18 @@
               </li>
               <li>
                 <a
-                  href="/dashboard/pakan"
+                  href="/dashboard/pemberian_pakan"
                   class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-600 {% if request.url.path == '/dashboard/pakan' %}bg-blue-800{% endif %}"
                   ><i class="fas fa-utensils"></i><span>Pemberian Pakan</span></a
                 >
               </li>
-              <li>
+              <!-- <li>
                 <a
                   href="/dashboard/perhitungan_pakan"
                   class="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-600 {% if request.url.path == '/dashboard/perhitungan_pakan' %}bg-blue-800{% endif %}"
                   ><i class="fas fa-calculator"></i><span>Perhitungan Pakan</span></a
                 >
-              </li>
+              </li> -->
             </ul>
           </li>
           

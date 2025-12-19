@@ -12,14 +12,17 @@
       class="w-full h-auto max-w-sm lg:max-w-md xl:max-w-lg object-cover"
     />
   </div>
-  
 
   <!-- Kolom kanan: form login -->
   <div class="w-full lg:w-5/12 max-w-md mx-auto bg-white/90 backdrop-blur-md p-10 shadow-2xl rounded-3xl mt-10 lg:mt-0 lg:ml-10 border-2 border-blue-200">
     <h2 class="text-3xl font-extrabold mb-8 text-center text-blue-900 drop-shadow-lg bg-gradient-to-r from-blue-400 via-blue-600 to-blue-500 bg-clip-text text-transparent">
       Login
     </h2>
-  
+    {% if error %}
+    <div class="mb-6 p-3 rounded-xl bg-red-100 text-red-700 text-sm font-semibold text-center border border-red-300">
+      {{ error }}
+    </div>
+    {% endif %}
     <form method="post" class="space-y-6">
   
       <!-- Username / Email -->
@@ -36,14 +39,31 @@
       <!-- Password -->
       <div>
         <label class="block text-sm font-semibold mb-1 text-blue-800">Password</label>
-        <input 
-            type="password"
-            name="password"
-            placeholder="password"
-            class="w-full border-2 border-blue-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition text-blue-900 shadow-sm hover:shadow-md"
-            required
-        >
+      
+        <div class="relative">
+          <input 
+              id="password"
+              type="password"
+              name="password"
+              placeholder="password"
+              class="w-full border-2 border-blue-300 rounded-xl px-4 py-3 pr-12
+                     focus:outline-none focus:ring-4 focus:ring-blue-200 
+                     focus:border-blue-500 transition text-blue-900 
+                     shadow-sm hover:shadow-md"
+              required
+          >
+      
+          <!-- Ikon mata -->
+          <button
+            type="button"
+            onclick="togglePassword()"
+            class="absolute inset-y-0 right-0 flex items-center px-4 text-blue-600 hover:text-blue-800 transition"
+          >
+            <i id="eyeIcon" class="fa-solid fa-eye"></i>
+          </button>
+        </div>
       </div>
+      
   
       <!-- Submit -->
       <button 
@@ -63,4 +83,21 @@
   
 
 </div>
+<script>
+  function togglePassword() {
+    const passwordInput = document.getElementById("password");
+    const eyeIcon = document.getElementById("eyeIcon");
+
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";
+      eyeIcon.classList.remove("fa-eye");
+      eyeIcon.classList.add("fa-eye-slash");
+    } else {
+      passwordInput.type = "password";
+      eyeIcon.classList.remove("fa-eye-slash");
+      eyeIcon.classList.add("fa-eye");
+    }
+  }
+</script>
+
 {% endblock %}

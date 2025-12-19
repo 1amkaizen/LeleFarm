@@ -136,9 +136,8 @@ async def panen_page(request: Request):
         )
 
         # Laba
-        laba_kotor = Decimal(total_jual_kolam) - total_biaya_produksi
-        laba_bersih = laba_kotor  # belum ada biaya tambahan lain
-
+        total_keuntungan = Decimal(total_jual_kolam) - total_biaya_produksi
+  
         # Simpan ringkasan per kolam
         ringkasan_per_kolam[kolam_id] = {
             "nama_kolam": k.get("nama_kolam", "-"),
@@ -183,10 +182,8 @@ async def panen_page(request: Request):
             "total_biaya_produksi": total_biaya_produksi,
             "total_biaya_produksi_fmt": fmt(total_biaya_produksi),
             # ===== LABA =====
-            "laba_kotor": laba_kotor,
-            "laba_kotor_fmt": fmt(laba_kotor),
-            "laba_bersih": laba_bersih,
-            "laba_bersih_fmt": fmt(laba_bersih),
+            "total_keuntungan": total_keuntungan,
+            "total_keuntungan_fmt": fmt(total_keuntungan),
             "panen_detail": [
                 {
                     "id": p["id"],

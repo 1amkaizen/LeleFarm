@@ -1,0 +1,475 @@
+<!-- templates/dashboard/pemberian_pakan.html -->
+{% extends "dashboard/base.html" %}
+{% block title %}Pemberian Pakan{% endblock %}
+
+{% block content %}
+
+<!-- ===== PAGE HEADER + BREADCRUMB ===== -->
+<div class="mb-8 mt-5">
+  <!-- Breadcrumb -->
+  <nav class="text-sm text-gray-500 mb-2">
+    <ol class="flex items-center space-x-2">
+      <li class="hover:text-blue-600 transition">
+        <i class="fas fa-home mr-1"></i> Dashboard
+      </li>
+      <li>/</li>
+      <li class="text-blue-700 font-semibold">
+        Pemberian Pakan
+      </li>
+    </ol>
+  </nav>
+
+  <!-- Page Title -->
+  <div class="flex items-center gap-4 
+              bg-gradient-to-r from-blue-500 to-blue-600 
+              text-white p-5 rounded-2xl shadow-lg">
+
+    <!-- Icon -->
+    <div class="bg-white/20 p-3 rounded-xl">
+      <i class="fas fa-utensils text-2xl"></i>
+    </div>
+
+    <!-- Title -->
+    <div>
+      <h1 class="text-2xl font-bold leading-tight">
+        Pemberian Pakan
+      </h1>
+      <p class="text-sm text-blue-100">
+        Pencatatan pakan harian untuk monitoring pertumbuhan.
+      </p>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Form Tambah Pakan -->
+<!-- Form Tambah Pakan -->
+<form action="/dashboard/pemberian_pakan/add" method="post" class="bg-white/90 backdrop-blur-2xl p-8 rounded-3xl
+         shadow-[0_20px_50px_rgba(8,_112,_184,_0.1)]
+         border border-white mb-8
+         transition-all duration-500
+         hover:shadow-[0_30px_60px_rgba(8,_112,_184,_0.15)]">
+
+  <!-- Header -->
+  <div class="flex items-center gap-3 mb-6">
+    <div class="h-8 w-1.5 bg-blue-600 rounded-full"></div>
+    <h2 class="text-xl font-bold text-gray-800 tracking-tight">
+      Tambah Pakan
+    </h2>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    <!-- Pilih Kolam -->
+    <div class="relative group lg:col-span-2" x-data="{ open: false, selected: null }">
+      <label class="flex items-center gap-2 mb-2 ml-1 text-sm font-bold text-gray-700 uppercase tracking-wider">
+        <i class="fas fa-water text-blue-500"></i>
+        Kolam
+      </label>
+
+      <div class="w-full rounded-2xl border-gray-200 bg-gray-50/50 px-5 py-3.5
+               shadow-inner cursor-pointer flex justify-between items-center
+               transition-all duration-300
+               focus-within:bg-white focus-within:border-blue-500
+               hover:border-blue-300" @click="open = !open">
+        <span x-text="selected ? selected.nama : 'Pilih kolam...'" class="text-gray-700"></span>
+        <i class="fas fa-chevron-down text-gray-400"></i>
+      </div>
+
+      <ul x-show="open" @click.outside="open = false" class="absolute left-0 w-full bg-white border rounded-2xl mt-1
+               max-h-48 overflow-auto z-50 shadow-lg">
+        {% for kolam in kolam_list %}
+        <li class="px-4 py-2 hover:bg-blue-50 cursor-pointer transition"
+          @click="selected = {id: {{ kolam.id }}, nama: '{{ kolam.nama_kolam }}'}; open=false;">
+          {{ kolam.nama_kolam }}
+        </li>
+        {% endfor %}
+      </ul>
+
+      <input type="hidden" name="kolam_id" :value="selected ? selected.id : ''" required>
+    </div>
+
+    <!-- Pilih Pakan -->
+    <div class="relative group" x-data="{ openPakan: false, selectedPakan: null }">
+      <label class="flex items-center gap-2 mb-2 ml-1 text-sm font-bold text-gray-700 uppercase tracking-wider">
+        <i class="fas fa-boxes text-yellow-500"></i>
+        Pakan
+      </label>
+
+      <div class="w-full rounded-2xl border-gray-200 bg-gray-50/50 px-5 py-3.5
+               shadow-inner cursor-pointer flex justify-between items-center
+               transition-all duration-300
+               focus-within:bg-white focus-within:border-yellow-500
+               hover:border-yellow-300" @click="openPakan = !openPakan">
+        <span x-text="selectedPakan ? selectedPakan.nama : 'Pilih pakan...'" class="text-gray-700"></span>
+        <i class="fas fa-chevron-down text-gray-400"></i>
+      </div>
+
+      <ul x-show="openPakan" @click.outside="openPakan = false" class="absolute left-0 w-full bg-white border rounded-2xl mt-1
+               max-h-48 overflow-auto z-50 shadow-lg">
+        {% for stok in pakan_stok_list %}
+        <li class="px-4 py-2 hover:bg-yellow-50 cursor-pointer transition"
+          @click="selectedPakan = {id: {{ stok.id }}, nama: '{{ stok.nama_pakan }}'}; openPakan=false;">
+          {{ stok.nama_pakan }}
+        </li>
+        {% endfor %}
+      </ul>
+
+      <input type="hidden" name="pakan_stok_id" :value="selectedPakan ? selectedPakan.id : ''" required>
+    </div>
+
+    <!-- Tanggal -->
+    <div class="relative group">
+      <label class="flex items-center gap-2 mb-2 ml-1 text-sm font-bold text-gray-700 uppercase tracking-wider">
+        <i class="fas fa-calendar-day text-indigo-500"></i>
+        Tanggal
+      </label>
+      <input type="date" name="tanggal" class="w-full rounded-2xl border-gray-200 bg-gray-50/50 px-5 py-3.5
+               shadow-inner transition-all duration-300
+               focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100
+               hover:border-indigo-300 cursor-pointer" required />
+    </div>
+
+    <!-- Jumlah -->
+    <div class="relative group">
+      <label class="flex items-center gap-2 mb-2 ml-1 text-sm font-bold text-gray-700 uppercase tracking-wider">
+        <i class="fas fa-weight-hanging text-amber-500"></i>
+        Jumlah
+      </label>
+      <div class="flex gap-2">
+        <input type="number" name="jumlah" min="0.1" step="0.1" class="w-full rounded-2xl border-gray-200 bg-gray-50/50 px-5 py-3.5
+                 shadow-inner transition-all duration-300
+                 focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-100
+                 hover:border-amber-300" required />
+        <select name="satuan" class="rounded-2xl border-gray-200 bg-gray-50/50 px-4
+                 shadow-inner transition-all duration-300
+                 focus:bg-white focus:border-amber-500">
+          <option value="g">g</option>
+          <option value="kg">kg</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Catatan -->
+    <div class="relative group lg:col-span-2">
+      <label class="flex items-center gap-2 mb-2 ml-1 text-sm font-bold text-gray-700 uppercase tracking-wider">
+        <i class="fas fa-sticky-note text-emerald-500"></i>
+        Catatan
+      </label>
+      <textarea name="catatan" rows="1" class="w-full rounded-2xl border-gray-200 bg-gray-50/50 px-5 py-3.5
+               shadow-inner transition-all duration-300 resize-none
+               focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100
+               hover:border-emerald-300 min-h-[54px]"></textarea>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="mt-8 flex justify-end items-center gap-4">
+    <p class="hidden md:block text-xs text-gray-400 font-medium">
+      <i class="fas fa-info-circle mr-1"></i> Pastikan data pakan sudah benar.
+    </p>
+    <button type="submit" class="group relative w-full md:w-auto overflow-hidden
+             px-8 py-3.5 rounded-2xl font-bold text-white
+             bg-blue-600 transition-all duration-300 hover:bg-indigo-600
+             active:scale-95 flex items-center justify-center gap-3">
+      <span class="relative z-10 flex items-center gap-2">
+        <i class="fas fa-save text-sm group-hover:rotate-90 transition-transform duration-300"></i>
+        Simpan Pakan
+      </span>
+    </button>
+  </div>
+
+</form>
+
+
+<hr class="my-6" />
+
+<h2 class="text-xl font-semibold mb-2 flex items-center gap-2 text-blue-900">
+  <i class="fas fa-list text-indigo-500"></i> Riwayat Pakan
+</h2>
+
+<!-- Tabel Pakan -->
+<div class="overflow-x-auto mb-5 rounded-2xl shadow-lg ring-1 ring-black/5 bg-white">
+  <table id="pakanTable" class="w-full md:min-w-[900px] table-auto text-sm text-gray-700">
+
+    <thead class="bg-gradient-to-r from-blue-600 to-blue-500 text-white text-center">
+      <tr>
+        <th class="px-4 py-4 font-semibold whitespace-nowrap">
+          <i class="fas fa-water mr-1"></i> Kolam
+        </th>
+        <th class="px-4 py-4 font-semibold whitespace-nowrap">
+          <i class="fas fa-calendar-alt mr-1"></i> Tanggal
+        </th>
+        <th class="px-4 py-4 font-semibold whitespace-nowrap">
+          <i class="fas fa-leaf mr-1"></i> Jenis Pakan
+        </th>
+        <th class="px-4 py-4 font-semibold whitespace-nowrap">
+          <i class="fas fa-weight-hanging mr-1"></i> Jumlah
+        </th>
+        <th class="px-4 py-4 font-semibold whitespace-nowrap">
+          <i class="fas fa-sticky-note mr-1"></i> Catatan
+        </th>
+        <th class="px-4 py-4 font-semibold whitespace-nowrap text-center">
+          <i class="fas fa-cogs mr-1"></i> Aksi
+        </th>
+      </tr>
+    </thead>
+
+    <tbody class="text-center divide-y divide-gray-100 bg-white">
+      {% for p in pakan_list %}
+      <tr class="pakanRow hover:bg-blue-50/70 transition-all duration-200 group">
+
+        <td class="px-4 py-4 whitespace-nowrap font-semibold text-gray-800 text-left">
+          {{ p.kolam_nama }}
+        </td>
+
+        <td class="px-4 py-4 whitespace-nowrap text-gray-600">
+          {{ p.tanggal }}
+        </td>
+
+        <td class="px-4 py-4 whitespace-nowrap font-medium">
+          <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs">
+            {{ p.jenis_pakan }}
+          </span>
+        </td>
+
+        <td class="px-4 py-4 whitespace-nowrap font-bold text-gray-800">
+          {% if p.jumlah_gram >= 1000 %}
+          {% if p.jumlah_gram % 1000 == 0 %}
+          {{ (p.jumlah_gram / 1000)|int }}
+          {% else %}
+          {{ "{:,.2f}".format(p.jumlah_gram / 1000)|replace(',', '.') }}
+          {% endif %}
+          <span class="text-[10px] text-gray-400 uppercase ml-1">kg</span>
+          {% else %}
+          {{ p.jumlah_gram|int }}
+          <span class="text-[10px] text-gray-400 uppercase ml-1">g</span>
+          {% endif %}
+        </td>
+
+        <td class="px-4 py-4 whitespace-nowrap text-gray-500 max-w-xs truncate">
+          {{ p.catatan|default('-', true) }}
+        </td>
+
+        <td class="px-4 py-4 whitespace-nowrap text-center">
+          <div class="flex items-center justify-center gap-2">
+            <button
+              class="edit-pakan-btn inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white bg-yellow-400 hover:bg-yellow-500 transition shadow-sm active:scale-90"
+              data-id="{{ p.id }}" data-kolam="{{ p.kolam_id }}" data-pakan="{{ p.pakan_stok_id }}"
+              data-tanggal="{{ p.tanggal }}" data-jumlah="{{ p.jumlah_gram }}" data-satuan="g"
+              data-catatan="{{ (p.catatan or '')|replace("'", "\\'") }}">
+              <i class="fas fa-edit"></i>
+            </button>
+
+            <button type="button"
+              class="delete-pakan-btn inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 transition shadow-sm active:scale-90"
+              data-id="{{ p.id }}">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+
+    <tfoot class="bg-blue-50 font-semibold text-center border-t-2 border-blue-100">
+      <tr>
+        <td class="px-4 py-4 text-left" colspan="3">
+          <i class="fas fa-calculator text-blue-500 mr-1"></i> Total Penggunaan Pakan
+        </td>
+        <td class="px-4 py-4 text-gray-800">
+          {# Logika total pakan dalam KG #}
+          {% set total_pakan_kg = (pakan_list|sum(attribute='jumlah_gram') / 1000) %}
+          {% if total_pakan_kg % 1 == 0 %}
+          {{ total_pakan_kg|int }}
+          {% else %}
+          {{ "{:,.2f}".format(total_pakan_kg)|replace(',', '.') }}
+          {% endif %}
+          <span class="text-[10px] uppercase ml-1 text-gray-500">kg</span>
+        </td>
+        <td class="px-4 py-4"></td>
+        <td class="px-4 py-4"></td>
+      </tr>
+    </tfoot>
+
+  </table>
+</div>
+
+<!-- Pagination Pakan -->
+<div id="paginationControls" class="flex items-center justify-center gap-3 mt-6 mb-8">
+
+  <button id="prevBtn" onclick="changePage('prev')" disabled
+    class="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-blue-300 text-blue-600 hover:bg-blue-600 hover:text-white shadow-md transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed">
+    <i class="fas fa-chevron-left text-sm"></i>
+  </button>
+
+  <span id="pageInfo" class="px-5 py-2 rounded-full bg-blue-100 text-blue-800 font-semibold text-sm shadow-inner">
+    Page 1
+  </span>
+
+  <button id="nextBtn" onclick="changePage('next')" disabled
+    class="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-blue-300 text-blue-600 hover:bg-blue-600 hover:text-white shadow-md transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed">
+    <i class="fas fa-chevron-right text-sm"></i>
+  </button>
+
+</div>
+
+<!-- Modal Edit Pakan -->
+<div id="editPakanModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+    <h2 class="text-lg font-semibold text-blue-900 mb-4">Edit Pakan</h2>
+    <form id="editPakanForm" method="post" action="/dashboard/pemberian_pakan/edit">
+      <input type="hidden" name="pakan_id" id="edit_pakan_id" />
+
+      <!-- Kolam -->
+      <div class="mb-3">
+        <label class="block text-sm font-medium text-blue-900">Kolam</label>
+        <select id="edit_kolam" name="kolam_id" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300">
+          {% for kolam in kolam_list %}
+          <option value="{{ kolam.id }}">{{ kolam.nama_kolam }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Pakan -->
+      <div class="mb-3">
+        <label class="block text-sm font-medium text-blue-900">Jenis Pakan</label>
+        <select id="edit_pakan" name="pakan_stok_id" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300">
+          {% for stok in pakan_stok_list %}
+          <option value="{{ stok.id }}">{{ stok.nama_pakan }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Tanggal -->
+      <div class="mb-3">
+        <label class="block text-sm font-medium text-blue-900">Tanggal Pemberian</label>
+        <input type="date" id="edit_tanggal" name="tanggal" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300"/>
+      </div>
+
+      <!-- Jumlah & Satuan -->
+      <div class="mb-3">
+        <label class="block text-sm font-medium text-blue-900">Jumlah Pakan</label>
+        <div class="flex gap-2">
+          <input type="number" id="edit_jumlah" name="jumlah" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300" min="0.1" step="0.1" />
+          <select id="edit_satuan" name="satuan" class="border rounded p-2 focus:ring-2 focus:ring-blue-300">
+            <option value="g">g</option>
+            <option value="kg">kg</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Catatan -->
+      <div class="mb-3">
+        <label class="block text-sm font-medium text-blue-900">Catatan</label>
+        <textarea id="edit_catatan" name="catatan" class="border rounded p-2 w-full focus:ring-2 focus:ring-blue-300"></textarea>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button type="button" onclick="closeEditPakanModal()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Batal</button>
+        <button type="submit" class="px-4 py-2 rounded bg-blue-500 hover:bg-blue-600 text-white">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Delete Pakan -->
+<div id="deletePakanModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-sm p-6 relative">
+    <h2 class="text-lg font-semibold text-blue-900 mb-4">Hapus Pakan?</h2>
+    <form id="deletePakanForm" method="post" action="/dashboard/pemberian_pakan/delete">
+      <input type="hidden" name="pakan_id" id="delete_pakan_id" />
+      <div class="flex justify-end gap-2">
+        <button type="button" onclick="closeDeletePakanModal()" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">Batal</button>
+        <button type="submit" class="px-4 py-2 rounded bg-red-500 hover:bg-red-600 text-white">Hapus</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Set default tanggal pada form tambah
+    const tanggalInput = document.querySelector('input[name="tanggal"]');
+    if(tanggalInput && !tanggalInput.value){
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      tanggalInput.value = `${yyyy}-${mm}-${dd}`;
+    }
+  
+    // Tombol Edit
+    document.querySelectorAll('.edit-pakan-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('edit_pakan_id').value = btn.dataset.id;
+        document.getElementById('edit_kolam').value = btn.dataset.kolam;
+        document.getElementById('edit_pakan').value = btn.dataset.pakan;
+        document.getElementById('edit_tanggal').value = btn.dataset.tanggal;
+        document.getElementById('edit_jumlah').value = btn.dataset.jumlah;
+        document.getElementById('edit_satuan').value = btn.dataset.satuan;
+        document.getElementById('edit_catatan').value = btn.dataset.catatan;
+        document.getElementById('editPakanModal').classList.remove('hidden');
+      });
+    });
+  
+    // Tombol Delete
+    document.querySelectorAll('.delete-pakan-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('delete_pakan_id').value = btn.dataset.id;
+        document.getElementById('deletePakanModal').classList.remove('hidden');
+      });
+    });
+  
+  });
+  
+  // Fungsi tutup modal
+  function closeEditPakanModal(){
+    document.getElementById('editPakanModal').classList.add('hidden');
+  }
+  function closeDeletePakanModal(){
+    document.getElementById('deletePakanModal').classList.add('hidden');
+  }
+  </script>
+  
+  <script>
+    // Script pagination
+    const rowsPerPage = 5;  // Jumlah baris per halaman
+    let currentPage = 1;
+  
+    // Ambil semua baris dalam tabel
+    const stokRows = document.querySelectorAll('table tbody tr');
+    const totalRows = stokRows.length;
+    const totalPages = Math.ceil(totalRows / rowsPerPage);
+  
+    // Fungsi untuk menampilkan halaman yang sesuai
+    function showPage(page) {
+      const startIdx = (page - 1) * rowsPerPage;
+      const endIdx = startIdx + rowsPerPage;
+  
+      stokRows.forEach((row, index) => {
+        row.style.display = (index >= startIdx && index < endIdx) ? '' : 'none';
+      });
+  
+      document.getElementById('pageInfo').innerText = `Page ${page} of ${totalPages}`;
+      document.getElementById('prevBtn').disabled = page === 1;
+      document.getElementById('nextBtn').disabled = page === totalPages;
+    }
+  
+    // Fungsi untuk berpindah halaman
+    function changePage(direction) {
+      if (direction === 'prev' && currentPage > 1) {
+        currentPage--;
+      } else if (direction === 'next' && currentPage < totalPages) {
+        currentPage++;
+      }
+  
+      showPage(currentPage);
+    }
+  
+    // Tampilkan halaman pertama saat pertama kali load
+    showPage(currentPage);
+  </script>
+{% endblock %}

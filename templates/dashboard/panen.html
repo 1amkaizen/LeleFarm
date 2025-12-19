@@ -253,44 +253,25 @@
                 </div>
             </div>
 
-            <!-- BAGIAN LABA -->
+            <!-- BAGIAN KEUNTUNGAN / KERUGIAN -->
             <div class="col-span-1 sm:col-span-2">
-                <h3 class="font-bold text-gray-600 mb-1">Laba</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-1 gap-x-4">
-                    <div class="p-2 rounded-lg 
-                        {% if kolam.laba_kotor < 0 %}
-                            bg-red-100 border border-red-300
-                        {% else %}
-                            bg-green-100 border border-green-300
-                        {% endif %}
-                        break-words
+                <h3 class="font-bold text-gray-600 mb-1">Total Keuntungan / Kerugian</h3>
+                <div class="p-2 rounded-lg 
+                    {% if kolam.total_keuntungan < 0 %}
+                        bg-red-100 border border-red-300
+                    {% else %}
+                        bg-green-100 border border-green-300
+                    {% endif %}
+                    break-words
+                ">
+                    <span class="font-extrabold text-xl 
+                        {% if kolam.total_keuntungan < 0 %}text-red-700{% else %}text-green-700{% endif %}
                     ">
-                        <span class="text-sm font-semibold block">Laba Kotor</span>
-                        <span class="font-extrabold text-xl 
-                            {% if kolam.laba_kotor < 0 %}text-red-700{% else %}text-green-700{% endif %}
-                        ">
-                            Rp {{ kolam.laba_kotor_fmt }}
-                        </span>
-                    </div>
-
-                    <div class="p-2 rounded-lg 
-                        {% if kolam.laba_bersih < 0 %}
-                            bg-red-100 border border-red-300
-                        {% else %}
-                            bg-green-100 border border-green-300
-                        {% endif %}
-                        break-words
-                    ">
-                        <span class="text-sm font-semibold block">Laba Bersih</span>
-                        <span class="font-extrabold text-xl 
-                            {% if kolam.laba_bersih < 0 %}text-red-700{% else %}text-green-700{% endif %}
-                        ">
-                            Rp {{ kolam.laba_bersih_fmt }}
-                        </span>
-                    </div>
+                        Rp {{ kolam.total_keuntungan_fmt }}
+                    </span>
                 </div>
             </div>
-        </div>
+            
     </div>
     {% endfor %}
 </div>

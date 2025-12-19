@@ -108,14 +108,16 @@ async def login_page(request: Request):
 @router.post("/login")
 async def login_action(
     request: Request,
-    username: str = Form(...),    # <- tetap pakai 'username', isinya email/username
-    password: str = Form(...)
+    username: str = Form(...),  # email atau username
+    password: str = Form(...),
 ):
     db = get_db()
     logger.info(f"Proses login user: {username}")
 
+    error_message = None
+
     # =========================
-    # DETEKSI INPUT EMAIL ATAU USERNAME
+    # DETEKSI EMAIL / USERNAME
     # =========================
     is_email = "@" in username
 
@@ -124,19 +126,41 @@ async def login_action(
         result = db.table("Users").select("*").eq("email", username).single().execute()
     else:
         logger.info("Login menggunakan username")
-        result = db.table("Users").select("*").eq("username", username).single().execute()
+        result = (
+            db.table("Users").select("*").eq("username", username).single().execute()
+        )
 
-    # Jika tidak ditemukan
+    # =========================
+    # USER TIDAK DITEMUKAN
+    # =========================
     if not result.data:
-        raise HTTPException(status_code=400, detail="Akun tidak ditemukan")
+        logger.warning("Login gagal: akun tidak ditemukan")
+        error_message = "Akun tidak ditemukan"
+        return request.app.templates.TemplateResponse(
+            "login.html",
+            {
+                "request": request,
+                "error": error_message,
+                "username": username,  # biar input gak kosong
+            },
+        )
 
     user = result.data
 
     # =========================
-    # VALIDASI PASSWORD
+    # PASSWORD SALAH
     # =========================
     if not bcrypt.verify(password, user["password"]):
-        raise HTTPException(status_code=400, detail="Password salah")
+        logger.warning("Login gagal: password salah")
+        error_message = "Password salah"
+        return request.app.templates.TemplateResponse(
+            "login.html",
+            {
+                "request": request,
+                "error": error_message,
+                "username": username,
+            },
+        )
 
     logger.info(f"User login berhasil: {user['username']}")
 
@@ -154,7 +178,6 @@ async def login_action(
     )
 
     return response
-
 
 
 # =========================
