@@ -1,3 +1,0 @@
-id,nama_kolam,kapasitas_bibit,tanggal_mulai,status_panen,catatan,created_at,updated_at,user_id,total_bibit,total_berat_bibit,total_biaya_bibit,total_pakan,total_biaya_pakan,total_kematian,berat_panen,total_jual,fcr
-34,Kolam bangkar,10000,2025-08-23,belum,Lele bangkar,2025-12-15T07:37:02.033104+00:00,2025-12-15T13:08:50.886524+00:00,6,5000,100.0,1500000.0,348.0,1707000.0,100,100.0,1000000.0,3.48
-33,kolam 1,10000,2025-11-07,belum,,2025-12-14T19:55:50.493687+00:00,2025-12-16T12:44:37.830123+00:00,6,6000,1000.0,3800000.0,42.0,571000.0,860,0.0,0.0,0.0

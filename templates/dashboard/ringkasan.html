@@ -144,6 +144,99 @@ endblock %} {% block content %}
   </div>
 </div>
 
+
+<!-- ===== AI ===== -->
+{% if ai_summary %}
+<div class="mb-6 rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white shadow-sm">
+
+  <!-- HEADER -->
+  <div class="flex items-center gap-3 px-5 py-4 border-b border-blue-100">
+    <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-500 text-white shadow">
+      <i class="fas fa-robot"></i>
+    </div>
+    <div>
+      <h3 class="text-lg font-bold text-blue-800">
+        Ringkasan AI
+      </h3>
+      <p class="text-xs text-blue-500">
+        Analisis otomatis kondisi kolam
+      </p>
+    </div>
+  </div>
+
+  <!-- STATUS -->
+  {% if ai_status %}
+  <div class="px-5 pt-3">
+    {% if ai_status == "Stabil" %}
+    <span
+      class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+      <i class="fas fa-circle-check"></i> Stabil
+    </span>
+    {% elif ai_status == "Waspada" %}
+    <span
+      class="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-800">
+      <i class="fas fa-triangle-exclamation"></i> Waspada
+    </span>
+    {% elif ai_status == "Berisiko" %}
+    <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+      <i class="fas fa-skull-crossbones"></i> Berisiko
+    </span>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- CONTENT -->
+  <div class="px-5 py-4 text-gray-800 leading-relaxed">
+
+    <!-- SUMMARY -->
+    <p class="relative pl-5">
+      <span class="absolute left-0 top-1.5 w-1 h-5 bg-blue-500 rounded-full"></span>
+      {{ ai_summary }}
+    </p>
+
+    {% if ai_warnings and ai_warnings|length > 0 %}
+    <!-- WARNINGS -->
+    <div class="mt-4 rounded-xl border border-red-200 bg-red-50 p-4">
+      <div class="flex items-center gap-2 mb-2 text-red-700 font-semibold">
+        <i class="fas fa-triangle-exclamation"></i>
+        <span>Peringatan</span>
+      </div>
+
+      <ul class="space-y-2 text-sm text-red-700">
+        {% for w in ai_warnings %}
+        <li class="flex items-start gap-2">
+          <i class="fas fa-circle-exclamation mt-0.5"></i>
+          <span class="font-medium">{{ w }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if ai_recommendations and ai_recommendations|length > 0 %}
+    <!-- RECOMMENDATIONS -->
+    <div class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+      <div class="flex items-center gap-2 mb-2 text-emerald-700 font-semibold">
+        <i class="fas fa-lightbulb"></i>
+        <span>Rekomendasi Tindakan</span>
+      </div>
+
+      <ul class="space-y-2 text-sm text-emerald-700">
+        {% for r in ai_recommendations %}
+        <li class="flex items-start gap-2">
+          <i class="fas fa-check-circle mt-0.5"></i>
+          <span class="font-medium">{{ r }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endif %}
+
+
 <!-- ===== SECTION HEADER ===== -->
 <div class="mb-5">
   <div class="flex items-center gap-3">
@@ -158,6 +251,8 @@ endblock %} {% block content %}
     </div>
   </div>
 </div>
+
+
 
 <!-- Bungkus semua accordion -->
 <div id="accordion-container">
@@ -647,6 +742,8 @@ endblock %} {% block content %}
 
   {% endfor %}
 </div>
+
+
 <!-- Pagination Controls Accordion (Modern) -->
 <div class="flex items-center justify-center gap-3 mt-6 mb-6">
   <!-- Prev -->
@@ -673,6 +770,8 @@ endblock %} {% block content %}
     <i class="fas fa-chevron-right text-sm"></i>
   </button>
 </div>
+
+
 
 <!-- ===== SECTION HEADER ===== -->
 <div class="mb-5">
@@ -805,6 +904,9 @@ endblock %} {% block content %}
     <i class="fas fa-chevron-right text-sm"></i>
   </button>
 </div>
+
+
+
 
 <script>
   const ROWS_PER_PAGE_PERBANDINGAN = 5;

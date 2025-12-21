@@ -12,6 +12,8 @@ from services.bibit import get_all_bibit
 from services.pengeluaran import get_all_pengeluaran
 from services.pemberian_pakan import get_all_pakan
 from services.pakan_stok import get_all_pakan_stok
+from services.ai.ringkasan_ai import generate_ringkasan_ai
+
 
 router = APIRouter()
 logger = logging.getLogger("router_ringkasan")
@@ -178,8 +180,6 @@ async def ringkasan_page(request: Request):
             k_data[cat]["total_item_fmt"] = fmt(k_data[cat]["total_item"])
             k_data[cat]["total_harga_fmt"] = fmt(k_data[cat]["total_harga"])
 
-
-
     # ===========================
     # Hitung total kematian per kolam
     # ===========================
@@ -191,8 +191,6 @@ async def ringkasan_page(request: Request):
             "total_ekor": total_kematian,
             "total_fmt": fmt(total_kematian)
         }
-
-
 
     # ===========================
     # Total Global
@@ -294,6 +292,14 @@ async def ringkasan_page(request: Request):
             k_data[cat]["total_item_fmt"] = fmt(k_data[cat]["total_item"])
             k_data[cat]["total_harga_fmt"] = fmt(k_data[cat]["total_harga"])
 
+    ai_result = await generate_ringkasan_ai({
+        "pengeluaran_per_kolam": [
+            {"id": k_id, **k_data} for k_id, k_data in pengeluaran_per_kolam.items()
+        ],
+        "total_pengeluaran_semua_kolam": total_pengeluaran_semua_kolam,
+        "total_kematian": total_kematian,
+    })
+
     # ===========================
     # Render Template
     # ===========================
@@ -312,5 +318,7 @@ async def ringkasan_page(request: Request):
                 {"id": k_id, **k_data} for k_id, k_data in pengeluaran_per_kolam.items()
             ],
             "total_pengeluaran_semua_kolam": total_pengeluaran_semua_kolam,
+            "ai_summary": ai_result["summary"],
+            "ai_warnings": ai_result["warnings"],
         },
     )
